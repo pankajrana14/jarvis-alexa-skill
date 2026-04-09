@@ -26,7 +26,7 @@ def send_progressive_response(handler_input: HandlerInput, text: str) -> None:
         client.enqueue(
             SendDirectiveRequest(
                 header=Header(request_id=request_id),
-                directive=SpeakDirective(speech=f"<speak>{text}</speak>"),
+                directive=SpeakDirective(speech=text_to_ssml(text)),
             )
         )
     except Exception as e:
@@ -71,21 +71,24 @@ class QueryIntentHandler(AbstractRequestHandler):
         wiki_manager = WikiManager()
         wiki_index = wiki_manager.get_index()
 
+        agent_error = False
         try:
             response_text = run_agent(query, history, wiki_index, wiki_manager)
         except Exception as e:
             logger.error("Agent error: %s", e)
             response_text = _ERROR
+            agent_error = True
 
         clean_response = clean_for_speech(response_text)
 
-        history.append({"role": "user", "content": query})
-        history.append({"role": "assistant", "content": response_text})
-        session_attrs["history"] = history[-10:]  # keep last 5 turns
-        handler_input.attributes_manager.session_attributes = session_attrs
+        if not agent_error:
+            history.append({"role": "user", "content": query})
+            history.append({"role": "assistant", "content": response_text})
+            session_attrs["history"] = history[-10:]  # keep last 5 turns
+            handler_input.attributes_manager.session_attributes = session_attrs
 
-        session_id = handler_input.request_envelope.session.session_id
-        wiki_manager.append_log(session_id, query, response_text)
+            session_id = handler_input.request_envelope.session.session_id
+            wiki_manager.append_log(session_id, query, response_text)
 
         return (
             handler_input.response_builder
