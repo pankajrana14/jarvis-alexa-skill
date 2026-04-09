@@ -13,10 +13,13 @@ class WikiManager:
 
     def get_index(self) -> str:
         """Return wiki/index.md, or a default stub if it does not exist."""
+        import logging
+        logger = logging.getLogger(__name__)
         try:
             response = self.s3.get_object(Bucket=self.bucket, Key="wiki/index.md")
             return response["Body"].read().decode("utf-8")
-        except Exception:
+        except Exception as e:
+            logger.warning("Could not load wiki index: %s", e)
             return "# Wiki Index\n\nNo pages yet.\n"
 
     def append_log(self, session_id: str, query: str, response: str) -> None:

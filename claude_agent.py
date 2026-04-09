@@ -97,12 +97,14 @@ def run_agent(
         if time.time() - start > timeout:
             return "I'm taking too long to answer that. Please ask me again."
 
+        remaining = timeout - (time.time() - start)
         response = client.messages.create(
             model="claude-sonnet-4-6",
             max_tokens=1024,
             system=system,
             messages=messages,
             tools=TOOLS,
+            timeout=max(remaining, 1.0),
         )
 
         if response.stop_reason == "end_turn":
