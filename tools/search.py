@@ -1,6 +1,5 @@
 import os
 import requests
-from typing import Optional
 
 TAVILY_API_URL = "https://api.tavily.com/search"
 
@@ -34,7 +33,7 @@ def search_web(query: str, max_results: int = 3) -> str:
             return "No search results found."
 
         parts = []
-        for r in results[:3]:
+        for r in results[:max_results]:
             title = r.get("title", "")
             snippet = r.get("content", "")[:200]
             parts.append(f"{title}: {snippet}")
