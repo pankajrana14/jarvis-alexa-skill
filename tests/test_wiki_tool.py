@@ -54,6 +54,17 @@ def test_update_wiki_user_profile_stores_at_profile_key():
 
 
 @mock_aws
+def test_read_wiki_returns_user_profile_content():
+    from tools.wiki import read_wiki
+    s3 = boto3.client("s3", region_name="us-east-1")
+    s3.create_bucket(Bucket="test-bucket")
+    s3.put_object(Bucket="test-bucket", Key="wiki/user/profile.md", Body=b"# Profile\nName: Pankaj")
+
+    result = read_wiki("my profile")
+    assert "Pankaj" in result
+
+
+@mock_aws
 def test_read_wiki_normalizes_topic_to_lowercase_snake_case():
     from tools.wiki import read_wiki
     s3 = boto3.client("s3", region_name="us-east-1")
