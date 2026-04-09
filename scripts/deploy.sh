@@ -9,6 +9,11 @@
 
 set -e
 
+if [ ! -f "lambda_function.py" ]; then
+  echo "Error: run this script from the jarvis/ directory (cd jarvis && bash scripts/deploy.sh)"
+  exit 1
+fi
+
 FUNCTION_NAME="jarvis"
 REGION="eu-central-1"   # <-- change to your region
 
