@@ -1,0 +1,5 @@
+ask-sdk-core>=1.19.0
+anthropic>=0.40.0
+boto3>=1.34.0
+requests>=2.31.0
+python-dotenv>=1.0.0
