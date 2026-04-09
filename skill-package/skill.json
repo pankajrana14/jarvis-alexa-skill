@@ -1,0 +1,31 @@
+{
+  "manifest": {
+    "publishingInformation": {
+      "locales": {
+        "en-US": {
+          "name": "Jarvis",
+          "summary": "AI-powered voice assistant using Claude",
+          "description": "Jarvis is an AI voice assistant powered by Claude. Ask anything, search the web, and it remembers your preferences across sessions.",
+          "examplePhrases": [
+            "Alexa, open Jarvis",
+            "Alexa, ask Jarvis what is the weather in Berlin",
+            "Alexa, ask Jarvis who invented the internet"
+          ],
+          "keywords": ["AI", "assistant", "Claude", "chat", "search"]
+        }
+      },
+      "isAvailableWorldwide": false,
+      "testingInstructions": "Say: Alexa, open Jarvis",
+      "category": "KNOWLEDGE_AND_TRIVIA",
+      "distributionCountries": []
+    },
+    "apis": {
+      "custom": {
+        "endpoint": {
+          "uri": "REPLACE_WITH_LAMBDA_ARN"
+        }
+      }
+    },
+    "manifestVersion": "1.0"
+  }
+}
