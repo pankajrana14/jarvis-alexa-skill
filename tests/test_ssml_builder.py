@@ -47,4 +47,4 @@ def test_clean_for_speech_removes_code_blocks():
 def test_clean_for_speech_truncates_at_500_words():
     long_text = "word " * 600
     result = clean_for_speech(long_text)
-    assert len(result.split()) <= 501
+    assert len(result.split()) == 500  # "." appended to last word, not as separate token

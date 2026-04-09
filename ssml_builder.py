@@ -1,8 +1,17 @@
+"""
+SSML utilities for Alexa voice responses.
+
+Call order: clean_for_speech(text) FIRST, then text_to_ssml(result).
+text_to_ssml escapes < and > which would corrupt output if clean_for_speech ran after.
+"""
 import re
 
 
 def text_to_ssml(text: str) -> str:
-    """Wrap plain text in SSML speak tags, escaping XML special characters."""
+    """Wrap plain text in SSML speak tags, escaping XML special characters.
+
+    Always call clean_for_speech() before this function.
+    """
     text = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
     return f"<speak>{text}</speak>"
 
