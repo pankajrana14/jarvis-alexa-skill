@@ -1,6 +1,6 @@
 import boto3
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 
@@ -28,7 +28,7 @@ class WikiManager:
             except Exception:
                 log = "# Session Log\n\n"
 
-            timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+            timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
             short_id = session_id[-8:]
             entry = (
                 f"\n## {timestamp} (session: {short_id})\n"
