@@ -42,7 +42,7 @@ def read_wiki(topic: str, bucket_name: Optional[str] = None) -> str:
 
 
 def update_wiki(topic: str, content: str, bucket_name: Optional[str] = None) -> str:
-    """Write or update a wiki page in S3."""
+    """Append new content to a wiki page in S3, preserving existing content."""
     bucket = _bucket(bucket_name)
     s3 = _s3()
 
@@ -52,10 +52,20 @@ def update_wiki(topic: str, content: str, bucket_name: Optional[str] = None) -> 
         key = f"wiki/topics/{topic.lower().replace(' ', '_')}.md"
 
     try:
+        try:
+            existing = s3.get_object(Bucket=bucket, Key=key)
+            existing_content = existing["Body"].read().decode("utf-8")
+        except ClientError as e:
+            if _is_not_found(e):
+                existing_content = f"# {topic.title()}\n\n"
+            else:
+                raise
+
+        merged = existing_content.rstrip() + "\n\n" + content.strip() + "\n"
         s3.put_object(
             Bucket=bucket,
             Key=key,
-            Body=content.encode("utf-8"),
+            Body=merged.encode("utf-8"),
             ContentType="text/markdown",
         )
         return f"Updated wiki page for '{topic}'."

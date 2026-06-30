@@ -4,6 +4,12 @@ from ask_sdk_core.api_client import DefaultApiClient
 from intent_handlers import (
     LaunchRequestHandler,
     QueryIntentHandler,
+    PriceQueryIntentHandler,
+    MoreDetailsIntentHandler,
+    GreetingIntentHandler,
+    ThankYouIntentHandler,
+    YesIntentHandler,
+    NoIntentHandler,
     StopIntentHandler,
     HelpIntentHandler,
     FallbackIntentHandler,
@@ -16,6 +22,12 @@ sb = CustomSkillBuilder(api_client=DefaultApiClient())
 
 sb.add_request_handler(LaunchRequestHandler())
 sb.add_request_handler(QueryIntentHandler())
+sb.add_request_handler(PriceQueryIntentHandler())
+sb.add_request_handler(MoreDetailsIntentHandler())
+sb.add_request_handler(GreetingIntentHandler())
+sb.add_request_handler(ThankYouIntentHandler())
+sb.add_request_handler(YesIntentHandler())
+sb.add_request_handler(NoIntentHandler())
 sb.add_request_handler(StopIntentHandler())
 sb.add_request_handler(HelpIntentHandler())
 sb.add_request_handler(FallbackIntentHandler())

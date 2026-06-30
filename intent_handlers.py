@@ -5,11 +5,14 @@ from ask_sdk_core.handler_input import HandlerInput
 from ask_sdk_model import Response
 from ask_sdk_model.services.directive import SendDirectiveRequest, Header, SpeakDirective
 
-from claude_agent import run_agent
+from agent import run_agent
 from wiki_manager import WikiManager
 from ssml_builder import text_to_ssml, clean_for_speech
 
 logger = logging.getLogger(__name__)
+
+# Module-level wiki index cache — persists across warm Lambda invocations
+_wiki_index_cache: str = ""
 
 _WELCOME = "Hi, I'm Jarvis. What would you like to know?"
 _HELP = "You can ask me anything. Just say your question. Say stop to exit."
@@ -46,6 +49,46 @@ class LaunchRequestHandler(AbstractRequestHandler):
         )
 
 
+def _handle_query(handler_input: HandlerInput, query: str) -> Response:
+    """Shared logic for all query-type intents."""
+    send_progressive_response(handler_input, "Let me think about that.")
+
+    session_attrs = handler_input.attributes_manager.session_attributes
+    history = session_attrs.get("history", [])
+
+    wiki_manager = WikiManager()
+    global _wiki_index_cache
+    if not _wiki_index_cache:
+        _wiki_index_cache = wiki_manager.get_index()
+    wiki_index = _wiki_index_cache
+
+    agent_error = False
+    try:
+        response_text = run_agent(query, history, wiki_index, wiki_manager)
+    except Exception as e:
+        logger.error("Agent error: %s", e)
+        response_text = _ERROR
+        agent_error = True
+
+    clean_response = clean_for_speech(response_text)
+
+    if not agent_error:
+        history.append({"role": "user", "content": query})
+        history.append({"role": "assistant", "content": response_text})
+        session_attrs["history"] = history[-10:]
+        handler_input.attributes_manager.session_attributes = session_attrs
+
+        session_id = handler_input.request_envelope.session.session_id
+        wiki_manager.append_log(session_id, query, response_text)
+
+    return (
+        handler_input.response_builder
+        .speak(text_to_ssml(clean_response))
+        .ask(text_to_ssml("Is there anything else?"))
+        .response
+    )
+
+
 class QueryIntentHandler(AbstractRequestHandler):
     def can_handle(self, handler_input: HandlerInput) -> bool:
         return is_intent_name("QueryIntent")(handler_input)
@@ -63,36 +106,62 @@ class QueryIntentHandler(AbstractRequestHandler):
                 .response
             )
 
-        send_progressive_response(handler_input, "Let me think about that.")
+        return _handle_query(handler_input, query)
 
-        session_attrs = handler_input.attributes_manager.session_attributes
-        history = session_attrs.get("history", [])
 
-        wiki_manager = WikiManager()
-        wiki_index = wiki_manager.get_index()
+class PriceQueryIntentHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input: HandlerInput) -> bool:
+        return is_intent_name("PriceQueryIntent")(handler_input)
 
-        agent_error = False
-        try:
-            response_text = run_agent(query, history, wiki_index, wiki_manager)
-        except Exception as e:
-            logger.error("Agent error: %s", e)
-            response_text = _ERROR
-            agent_error = True
+    def handle(self, handler_input: HandlerInput) -> Response:
+        return _handle_query(handler_input, "How much does it cost?")
 
-        clean_response = clean_for_speech(response_text)
 
-        if not agent_error:
-            history.append({"role": "user", "content": query})
-            history.append({"role": "assistant", "content": response_text})
-            session_attrs["history"] = history[-10:]  # keep last 5 turns
-            handler_input.attributes_manager.session_attributes = session_attrs
+class MoreDetailsIntentHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input: HandlerInput) -> bool:
+        return is_intent_name("MoreDetailsIntent")(handler_input)
 
-            session_id = handler_input.request_envelope.session.session_id
-            wiki_manager.append_log(session_id, query, response_text)
+    def handle(self, handler_input: HandlerInput) -> Response:
+        return _handle_query(handler_input, "Tell me more about it.")
 
+
+class GreetingIntentHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input: HandlerInput) -> bool:
+        return is_intent_name("GreetingIntent")(handler_input)
+
+    def handle(self, handler_input: HandlerInput) -> Response:
+        return _handle_query(handler_input, "The user greeted you. Greet them back warmly and ask what they'd like to know.")
+
+
+class ThankYouIntentHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input: HandlerInput) -> bool:
+        return is_intent_name("ThankYouIntent")(handler_input)
+
+    def handle(self, handler_input: HandlerInput) -> Response:
         return (
             handler_input.response_builder
-            .speak(text_to_ssml(clean_response))
+            .speak(text_to_ssml("You're welcome! Is there anything else I can help you with?"))
+            .ask(text_to_ssml("Is there anything else?"))
+            .response
+        )
+
+
+class YesIntentHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input: HandlerInput) -> bool:
+        return is_intent_name("AMAZON.YesIntent")(handler_input)
+
+    def handle(self, handler_input: HandlerInput) -> Response:
+        return _handle_query(handler_input, "Yes, please go ahead.")
+
+
+class NoIntentHandler(AbstractRequestHandler):
+    def can_handle(self, handler_input: HandlerInput) -> bool:
+        return is_intent_name("AMAZON.NoIntent")(handler_input)
+
+    def handle(self, handler_input: HandlerInput) -> Response:
+        return (
+            handler_input.response_builder
+            .speak(text_to_ssml("Okay, let me know if there's anything else."))
             .ask(text_to_ssml("Is there anything else?"))
             .response
         )

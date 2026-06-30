@@ -4,14 +4,14 @@
       "locales": {
         "en-US": {
           "name": "Jarvis",
-          "summary": "AI-powered voice assistant using Claude",
-          "description": "Jarvis is an AI voice assistant powered by Claude. Ask anything, search the web, and it remembers your preferences across sessions.",
+          "summary": "AI-powered voice assistant using Groq",
+          "description": "Jarvis is an AI voice assistant powered by Groq. Ask anything, search the web, and it remembers your preferences across sessions.",
           "examplePhrases": [
             "Alexa, open Jarvis",
             "Alexa, ask Jarvis what is the weather in Berlin",
             "Alexa, ask Jarvis who invented the internet"
           ],
-          "keywords": ["AI", "assistant", "Claude", "chat", "search"]
+          "keywords": ["AI", "assistant", "Groq", "chat", "search"]
         }
       },
       "isAvailableWorldwide": false,
