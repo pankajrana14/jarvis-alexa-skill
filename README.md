@@ -39,19 +39,90 @@ Full provider list: https://docs.litellm.ai/docs/providers. Pick a model that su
 pytest
 ```
 
-## Deploying
+## Provisioning AWS resources
 
+Do this once, before the first deploy. Replace `eu-central-1` if you changed `REGION` in `scripts/deploy.py`/`deploy.sh`.
+
+1. **Create the S3 bucket** (must match `S3_BUCKET_NAME` in `.env`):
+   ```bash
+   aws s3 mb s3://jarvis-wiki --region eu-central-1
+   ```
+
+2. **Create an IAM role for Lambda** with basic execution + S3 read/write:
+   ```bash
+   aws iam create-role --role-name jarvis-lambda-role \
+     --assume-role-policy-document '{
+       "Version": "2012-10-17",
+       "Statement": [{"Effect": "Allow", "Principal": {"Service": "lambda.amazonaws.com"}, "Action": "sts:AssumeRole"}]
+     }'
+
+   aws iam attach-role-policy --role-name jarvis-lambda-role \
+     --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+   aws iam put-role-policy --role-name jarvis-lambda-role \
+     --policy-name jarvis-s3-access \
+     --policy-document '{
+       "Version": "2012-10-17",
+       "Statement": [{
+         "Effect": "Allow",
+         "Action": ["s3:GetObject", "s3:PutObject"],
+         "Resource": "arn:aws:s3:::jarvis-wiki/*"
+       }]
+     }'
+   ```
+   Wait ~10s for IAM role propagation before the next step.
+
+3. **Create the Lambda function** (first deploy needs an initial zip — an empty placeholder works, `deploy.py` overwrites it):
+   ```bash
+   mkdir -p package && cd package && zip -r ../lambda.zip . -x '.*' && cd ..
+   ROLE_ARN=$(aws iam get-role --role-name jarvis-lambda-role --query 'Role.Arn' --output text)
+
+   aws lambda create-function \
+     --function-name jarvis \
+     --runtime python3.12 \
+     --handler lambda_function.lambda_handler \
+     --role "$ROLE_ARN" \
+     --timeout 30 \
+     --memory-size 256 \
+     --zip-file fileb://lambda.zip \
+     --region eu-central-1
+   ```
+
+4. **Set the function's environment variables** (console: Lambda → Configuration → Environment variables, or CLI):
+   ```bash
+   aws lambda update-function-configuration \
+     --function-name jarvis \
+     --region eu-central-1 \
+     --environment "Variables={LLM_MODEL=groq/openai/gpt-oss-20b,GROQ_API_KEY=your-key,TAVILY_API_KEY=your-key,S3_BUCKET_NAME=jarvis-wiki}"
+   ```
+
+5. **Note the function ARN** — you'll need it for `skill.json`:
+   ```bash
+   aws lambda get-function --function-name jarvis --region eu-central-1 --query 'Configuration.FunctionArn' --output text
+   ```
+
+Now run the real deploy to push actual source code:
 ```bash
 python scripts/deploy.py
 # or
 bash scripts/deploy.sh
 ```
-
-Both install dependencies into `package/`, zip the source into `lambda.zip`, and upload it to an existing Lambda function named `jarvis` (set `REGION`/`FUNCTION_NAME` at the top of the script if yours differ). The Lambda function must already exist with its env vars (`LLM_MODEL`, the provider key, `TAVILY_API_KEY`, `S3_BUCKET_NAME`) configured in the AWS console.
+Both install dependencies into `package/`, zip the source into `lambda.zip`, and `update-function-code` on the `jarvis` function (set `REGION`/`FUNCTION_NAME` at the top of the script if yours differ).
 
 ## Setting up the Alexa skill
 
-1. Install the [ASK CLI](https://developer.amazon.com/en-US/docs/alexa/smapi/quick-start-alexa-skills-kit-command-line-interface.html) or use the [Alexa developer console](https://developer.amazon.com/alexa/console/ask)
-2. Create a new custom skill and import the manifest + interaction model from `skill-package/`
-3. Point the skill's endpoint at your deployed Lambda function's ARN
-4. Build the model and test in the simulator: "Alexa, open Jarvis"
+1. Install the [ASK CLI](https://developer.amazon.com/en-US/docs/alexa/smapi/quick-start-alexa-skills-kit-command-line-interface.html) (`npm install -g ask-cli`, then `ask configure`) or use the [Alexa developer console](https://developer.amazon.com/alexa/console/ask).
+2. In `skill-package/skill.json`, replace `REPLACE_WITH_LAMBDA_ARN` with the ARN from step 5 above.
+3. Create the skill:
+   - **CLI:** `ask deploy` from the repo root (reads `skill-package/`).
+   - **Console:** create a new custom skill, then import the manifest (`skill-package/skill.json`) and interaction model (`skill-package/interactionModels/custom/en-US.json`) under Build → JSON Editor / Interaction Model.
+4. **Grant the Alexa service permission to invoke your Lambda** — required, easy to miss, causes silent "there was a problem" errors in the simulator if skipped:
+   ```bash
+   aws lambda add-permission \
+     --function-name jarvis \
+     --statement-id alexa-skill-trigger \
+     --action lambda:InvokeFunction \
+     --principal alexa-appkit.amazon.com \
+     --region eu-central-1
+   ```
+5. Build the interaction model in the console (Build tab → Build Model), then test in the simulator: "Alexa, open Jarvis".
