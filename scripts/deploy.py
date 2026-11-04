@@ -55,6 +55,7 @@ def main():
         "lambda_function.py",
         "intent_handlers.py",
         "agent.py",
+        "config.py",
         "wiki_manager.py",
         "ssml_builder.py",
     ]

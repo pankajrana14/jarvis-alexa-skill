@@ -1,3 +1,13 @@
+import logging
+
+import config
+
+# Must run before the handlers import: on Alexa-hosted skills the API keys
+# come from a bundled .env, since Lambda env vars can't be edited there.
+config.load_bundled_env()
+
+logging.getLogger().setLevel(logging.INFO)
+
 from ask_sdk_core.skill_builder import CustomSkillBuilder
 from ask_sdk_core.api_client import DefaultApiClient
 
@@ -14,6 +24,7 @@ from intent_handlers import (
     HelpIntentHandler,
     FallbackIntentHandler,
     SessionEndedRequestHandler,
+    CatchAllExceptionHandler,
 )
 
 # CustomSkillBuilder (not SkillBuilder) is required to enable
@@ -32,5 +43,6 @@ sb.add_request_handler(StopIntentHandler())
 sb.add_request_handler(HelpIntentHandler())
 sb.add_request_handler(FallbackIntentHandler())
 sb.add_request_handler(SessionEndedRequestHandler())
+sb.add_exception_handler(CatchAllExceptionHandler())
 
 lambda_handler = sb.lambda_handler()

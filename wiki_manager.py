@@ -1,15 +1,15 @@
-import boto3
-import os
 from datetime import datetime, timezone
 from typing import Optional
+
+import config
 
 
 class WikiManager:
     """Manages the Karpathy-style LLM wiki stored in S3."""
 
     def __init__(self, bucket_name: Optional[str] = None):
-        self.bucket = bucket_name or os.environ["S3_BUCKET_NAME"]
-        self.s3 = boto3.client("s3")
+        self.bucket = config.bucket_name(bucket_name)
+        self.s3 = config.s3_client()
 
     def get_index(self) -> str:
         """Return wiki/index.md, or a default stub if it does not exist."""

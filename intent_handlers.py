@@ -1,5 +1,5 @@
 import logging
-from ask_sdk_core.dispatch_components import AbstractRequestHandler
+from ask_sdk_core.dispatch_components import AbstractRequestHandler, AbstractExceptionHandler
 from ask_sdk_core.utils import is_request_type, is_intent_name
 from ask_sdk_core.handler_input import HandlerInput
 from ask_sdk_model import Response
@@ -211,3 +211,20 @@ class SessionEndedRequestHandler(AbstractRequestHandler):
     def handle(self, handler_input: HandlerInput) -> Response:
         logger.info("Session ended.")
         return handler_input.response_builder.response
+
+
+class CatchAllExceptionHandler(AbstractExceptionHandler):
+    """Log any unhandled error and speak a message, instead of Alexa's generic
+    'the requested skill did not provide a valid response'."""
+
+    def can_handle(self, handler_input: HandlerInput, exception: Exception) -> bool:
+        return True
+
+    def handle(self, handler_input: HandlerInput, exception: Exception) -> Response:
+        logger.exception("Unhandled skill error: %s", exception)
+        return (
+            handler_input.response_builder
+            .speak(text_to_ssml(_ERROR))
+            .ask(text_to_ssml("What would you like to know?"))
+            .response
+        )

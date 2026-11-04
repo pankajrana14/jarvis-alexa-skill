@@ -113,3 +113,18 @@ def test_query_handler_appends_to_session_history():
 
     history = hi.attributes_manager.session_attributes.get("history", [])
     assert any(m["content"] == "Hello" for m in history)
+
+
+def test_catch_all_exception_handler_speaks_error_and_logs():
+    from intent_handlers import CatchAllExceptionHandler
+    handler = CatchAllExceptionHandler()
+    hi = _make_handler_input()
+    err = RuntimeError("boom")
+
+    assert handler.can_handle(hi, err) is True
+    with patch("intent_handlers.logger") as mock_logger:
+        handler.handle(hi, err)
+
+    mock_logger.exception.assert_called_once()
+    speech_arg = hi.response_builder.speak.call_args[0][0]
+    assert "problem" in speech_arg
