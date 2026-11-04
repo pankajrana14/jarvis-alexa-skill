@@ -33,6 +33,14 @@ def clean_for_speech(text: str) -> str:
     text = re.sub(r"^\s*[-*+]\s+", "", text, flags=re.MULTILINE)
     # Remove numbered list markers
     text = re.sub(r"^\s*\d+\.\s+", "", text, flags=re.MULTILINE)
+    # Spell out units so Alexa reads weather naturally ("8.3°C" -> "8.3 degrees Celsius")
+    text = re.sub(r"(?<![\w.])-(?=\d+(?:\.\d+)?\s*°)", "minus ", text)
+    text = re.sub(r"\s*°\s*C\b", " degrees Celsius", text)
+    text = re.sub(r"\s*°\s*F\b", " degrees Fahrenheit", text)
+    text = re.sub(r"\s*°", " degrees", text)
+    text = re.sub(r"\s*km/h\b", " kilometers per hour", text)
+    text = re.sub(r"\s*\bmph\b", " miles per hour", text)
+    text = re.sub(r"(\d)\s*%", r"\1 percent", text)
     # Collapse multiple blank lines
     text = re.sub(r"\n{3,}", "\n\n", text)
     text = text.strip()

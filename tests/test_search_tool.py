@@ -47,3 +47,11 @@ def test_search_web_returns_no_results_message_on_empty_results():
     with patch("tools.search.requests.post", return_value=_mock_response(results=[])):
         result = search_web("obscure query xyz")
     assert "No search results" in result
+
+
+def test_search_web_keeps_up_to_500_chars_per_snippet():
+    from tools.search import search_web
+    results = [{"title": "T", "content": "x" * 800}]
+    with patch("tools.search.requests.post", return_value=_mock_response(results=results)):
+        result = search_web("anything")
+    assert result.count("x") == 500

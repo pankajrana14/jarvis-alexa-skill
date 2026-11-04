@@ -1,15 +1,15 @@
-import boto3
-import os
 from datetime import datetime, timezone
 from typing import Optional
+
+import config
 
 
 class WikiManager:
     """Manages the Karpathy-style LLM wiki stored in S3."""
 
     def __init__(self, bucket_name: Optional[str] = None):
-        self.bucket = bucket_name or os.environ["S3_BUCKET_NAME"]
-        self.s3 = boto3.client("s3")
+        self.bucket = config.bucket_name(bucket_name)
+        self.s3 = config.s3_client()
 
     def get_index(self) -> str:
         """Return wiki/index.md, or a default stub if it does not exist."""
@@ -21,6 +21,16 @@ class WikiManager:
         except Exception as e:
             logger.warning("Could not load wiki index: %s", e)
             return "# Wiki Index\n\nNo pages yet.\n"
+
+    def get_profile(self) -> str:
+        """Return the saved notes about the user (wiki/user/profile.md), or "" if none/unreadable."""
+        import logging
+        try:
+            response = self.s3.get_object(Bucket=self.bucket, Key="wiki/user/profile.md")
+            return response["Body"].read().decode("utf-8")
+        except Exception as e:
+            logging.getLogger(__name__).info("No user profile loaded: %s", e)
+            return ""
 
     def append_log(self, session_id: str, query: str, response: str) -> None:
         """Append a Q&A entry to wiki/log.md. Failures are silently swallowed."""

@@ -1,15 +1,15 @@
-import boto3
-import os
 from botocore.exceptions import ClientError
 from typing import Optional
 
+import config
+
 
 def _s3():
-    return boto3.client("s3")
+    return config.s3_client()
 
 
 def _bucket(bucket_name: Optional[str] = None) -> str:
-    return bucket_name or os.environ["S3_BUCKET_NAME"]
+    return config.bucket_name(bucket_name)
 
 
 def _is_not_found(e: ClientError) -> bool:

@@ -72,8 +72,8 @@ def test_help_handler_speaks_help_text():
 
 
 def test_query_handler_calls_run_agent_with_query():
-    from intent_handlers import QueryIntentHandler
-    handler = QueryIntentHandler()
+    from intent_handlers import UtteranceIntentHandler
+    handler = UtteranceIntentHandler()
     hi = _make_handler_input(intent_name="QueryIntent", slot_value="What is Python?")
 
     with patch("intent_handlers.is_intent_name", return_value=lambda _: True):
@@ -88,8 +88,8 @@ def test_query_handler_calls_run_agent_with_query():
 
 
 def test_query_handler_returns_fallback_when_slot_empty():
-    from intent_handlers import QueryIntentHandler
-    handler = QueryIntentHandler()
+    from intent_handlers import UtteranceIntentHandler
+    handler = UtteranceIntentHandler()
     hi = _make_handler_input(intent_name="QueryIntent", slot_value=None)
     hi.request_envelope.request.intent.slots = {}
 
@@ -101,8 +101,8 @@ def test_query_handler_returns_fallback_when_slot_empty():
 
 
 def test_query_handler_appends_to_session_history():
-    from intent_handlers import QueryIntentHandler
-    handler = QueryIntentHandler()
+    from intent_handlers import UtteranceIntentHandler
+    handler = UtteranceIntentHandler()
     hi = _make_handler_input(intent_name="QueryIntent", slot_value="Hello")
 
     with patch("intent_handlers.is_intent_name", return_value=lambda _: True):
@@ -113,3 +113,18 @@ def test_query_handler_appends_to_session_history():
 
     history = hi.attributes_manager.session_attributes.get("history", [])
     assert any(m["content"] == "Hello" for m in history)
+
+
+def test_catch_all_exception_handler_speaks_error_and_logs():
+    from intent_handlers import CatchAllExceptionHandler
+    handler = CatchAllExceptionHandler()
+    hi = _make_handler_input()
+    err = RuntimeError("boom")
+
+    assert handler.can_handle(hi, err) is True
+    with patch("intent_handlers.logger") as mock_logger:
+        handler.handle(hi, err)
+
+    mock_logger.exception.assert_called_once()
+    speech_arg = hi.response_builder.speak.call_args[0][0]
+    assert "problem" in speech_arg

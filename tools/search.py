@@ -18,7 +18,9 @@ def search_web(query: str, max_results: int = 3) -> str:
                 "query": query,
                 "search_depth": "basic",
                 "max_results": max_results,
-                "include_answer": True,
+                # Tavily's generated answer adds 0.5-5s; the LLM summarises the
+                # raw results itself, and Alexa allows ~8s for the whole turn.
+                "include_answer": False,
             },
             timeout=3,
         )
@@ -35,7 +37,7 @@ def search_web(query: str, max_results: int = 3) -> str:
         parts = []
         for r in results[:max_results]:
             title = r.get("title", "")
-            snippet = r.get("content", "")[:200]
+            snippet = r.get("content", "")[:500]
             parts.append(f"{title}: {snippet}")
         return " | ".join(parts)
 
