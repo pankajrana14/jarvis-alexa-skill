@@ -24,7 +24,7 @@ echo "==> Installing dependencies into package/..."
 pip install -r requirements.txt -t package/ --quiet
 
 echo "==> Copying source files..."
-cp lambda_function.py intent_handlers.py agent.py config.py wiki_manager.py ssml_builder.py package/
+cp lambda_function.py intent_handlers.py agent.py config.py wiki_manager.py ssml_builder.py utterance_frames.py package/
 cp -r tools/ package/tools/
 
 echo "==> Creating lambda.zip..."

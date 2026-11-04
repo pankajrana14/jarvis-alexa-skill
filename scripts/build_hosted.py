@@ -26,6 +26,7 @@ SOURCE_FILES = [
     "config.py",
     "wiki_manager.py",
     "ssml_builder.py",
+    "utterance_frames.py",
     "requirements.txt",
 ]
 HOSTED_ENV_KEYS_SKIP = {"S3_BUCKET_NAME"}

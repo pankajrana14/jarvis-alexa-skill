@@ -65,3 +65,24 @@ def test_append_log_does_not_raise_on_s3_failure():
     # Bucket does not exist — should fail silently
     wm = WikiManager("nonexistent-bucket")
     wm.append_log("s1", "q", "a")  # must not raise
+
+
+@mock_aws
+def test_get_profile_returns_saved_notes_or_empty():
+    from wiki_manager import WikiManager
+    s3 = boto3.client("s3", region_name="us-east-1")
+    s3.create_bucket(Bucket="test-bucket")
+    wm = WikiManager("test-bucket")
+    assert wm.get_profile() == ""
+
+    s3.put_object(Bucket="test-bucket", Key="wiki/user/profile.md", Body=b"# User Profile\n- my favourite city is Lisbon\n")
+    assert "Lisbon" in wm.get_profile()
+
+
+def test_get_profile_swallows_s3_errors():
+    from unittest.mock import MagicMock
+    from wiki_manager import WikiManager
+    wm = WikiManager("test-bucket")
+    wm.s3 = MagicMock()
+    wm.s3.get_object.side_effect = RuntimeError("AccessDenied")
+    assert wm.get_profile() == ""

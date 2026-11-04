@@ -22,6 +22,16 @@ class WikiManager:
             logger.warning("Could not load wiki index: %s", e)
             return "# Wiki Index\n\nNo pages yet.\n"
 
+    def get_profile(self) -> str:
+        """Return the saved notes about the user (wiki/user/profile.md), or "" if none/unreadable."""
+        import logging
+        try:
+            response = self.s3.get_object(Bucket=self.bucket, Key="wiki/user/profile.md")
+            return response["Body"].read().decode("utf-8")
+        except Exception as e:
+            logging.getLogger(__name__).info("No user profile loaded: %s", e)
+            return ""
+
     def append_log(self, session_id: str, query: str, response: str) -> None:
         """Append a Q&A entry to wiki/log.md. Failures are silently swallowed."""
         try:

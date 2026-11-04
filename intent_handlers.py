@@ -5,7 +5,11 @@ from ask_sdk_core.handler_input import HandlerInput
 from ask_sdk_model import Response
 from ask_sdk_model.services.directive import SendDirectiveRequest, Header, SpeakDirective
 
+from datetime import datetime, timezone
+
 from agent import run_agent
+from tools.wiki import update_wiki
+from utterance_frames import FRAMES, reconstruct
 from wiki_manager import WikiManager
 from ssml_builder import text_to_ssml, clean_for_speech
 
@@ -17,7 +21,9 @@ _wiki_index_cache: str = ""
 _WELCOME = "Hi, I'm Jarvis. What would you like to know?"
 _HELP = "You can ask me anything. Just say your question. Say stop to exit."
 _STOP = "Goodbye!"
-_FALLBACK = "Sorry, I didn't catch that. What would you like to know?"
+_FALLBACK = "Sorry, I didn't catch that. Try starting with what, how, or tell me, or say remember that."
+_RETRY = "Sorry, I missed the rest of that. Please say it again."
+_REMEMBER_WHAT = "What should I remember? Say remember that, followed by the fact."
 _ERROR = "I ran into a problem. Please try again."
 
 
@@ -60,11 +66,15 @@ def _handle_query(handler_input: HandlerInput, query: str) -> Response:
     global _wiki_index_cache
     if not _wiki_index_cache:
         _wiki_index_cache = wiki_manager.get_index()
-    wiki_index = _wiki_index_cache
+    wiki_context = _wiki_index_cache
+    # Saved notes are read every turn (not cached) so a fact saved a moment ago is used.
+    profile = wiki_manager.get_profile()
+    if isinstance(profile, str) and profile.strip():
+        wiki_context += f"\n\nSaved notes about the user (from explicit 'remember' requests):\n{profile.strip()}"
 
     agent_error = False
     try:
-        response_text = run_agent(query, history, wiki_index, wiki_manager)
+        response_text = run_agent(query, history, wiki_context, wiki_manager)
     except Exception as e:
         logger.error("Agent error: %s", e)
         response_text = _ERROR
@@ -89,24 +99,69 @@ def _handle_query(handler_input: HandlerInput, query: str) -> Response:
     )
 
 
-class QueryIntentHandler(AbstractRequestHandler):
+def _slot_value(handler_input: HandlerInput, name: str):
+    slots = handler_input.request_envelope.request.intent.slots or {}
+    slot = slots.get(name)
+    return slot.value if slot and slot.value else None
+
+
+def _ask(handler_input: HandlerInput, text: str, reprompt: str = "What would you like to know?") -> Response:
+    return handler_input.response_builder.speak(text_to_ssml(text)).ask(text_to_ssml(reprompt)).response
+
+
+class UtteranceIntentHandler(AbstractRequestHandler):
+    """All open-ended frames (questions, requests, statements, follow-ups, corrections,
+    generic carriers): rebuild the user's words from lead + slot and ask the agent.
+    Statements are passed as conversation context only; nothing is saved here."""
+
     def can_handle(self, handler_input: HandlerInput) -> bool:
-        return is_intent_name("QueryIntent")(handler_input)
+        request = handler_input.request_envelope.request
+        name = getattr(getattr(request, "intent", None), "name", None)
+        return is_request_type("IntentRequest")(handler_input) and name in FRAMES and name != "RememberIntent"
 
     def handle(self, handler_input: HandlerInput) -> Response:
-        slots = handler_input.request_envelope.request.intent.slots
-        query_slot = slots.get("query") if slots else None
-        query = query_slot.value if query_slot and query_slot.value else None
+        frame = FRAMES[handler_input.request_envelope.request.intent.name]
+        text = reconstruct(frame.intent, _slot_value(handler_input, frame.slot))
+        if not text:
+            return _ask(handler_input, _RETRY)
+        return _handle_query(handler_input, text)
 
-        if not query:
-            return (
-                handler_input.response_builder
-                .speak(text_to_ssml(_FALLBACK))
-                .ask(text_to_ssml("What would you like to know?"))
-                .response
-            )
 
-        return _handle_query(handler_input, query)
+class RememberIntentHandler(AbstractRequestHandler):
+    """Explicit 'remember that ...' requests: save to the user's wiki profile right away,
+    and only say it was saved if the save actually succeeded."""
+
+    def can_handle(self, handler_input: HandlerInput) -> bool:
+        return is_intent_name("RememberIntent")(handler_input)
+
+    def handle(self, handler_input: HandlerInput) -> Response:
+        fact = (_slot_value(handler_input, "fact") or "").strip()
+        if not fact:
+            return _ask(handler_input, _REMEMBER_WHAT, _REMEMBER_WHAT)
+
+        saved_on = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        try:
+            result = update_wiki("user profile", f"- {fact} (saved {saved_on})")
+            ok = isinstance(result, str) and result.startswith("Updated wiki page")
+            if not ok:
+                logger.error("Remember failed: %s", result)
+        except Exception as e:
+            logger.exception("Remember failed: %s", e)
+            ok = False
+
+        if ok:
+            speech = f"Okay, saved to your notes: {fact}."
+        else:
+            speech = "Sorry, I couldn't save that right now, so I won't remember it. Please try again later."
+
+        attrs = handler_input.attributes_manager.session_attributes
+        history = attrs.get("history", [])
+        history.append({"role": "user", "content": f"Remember that {fact}"})
+        history.append({"role": "assistant", "content": speech})
+        attrs["history"] = history[-10:]
+        handler_input.attributes_manager.session_attributes = attrs
+
+        return _ask(handler_input, clean_for_speech(speech), "Is there anything else?")
 
 
 class PriceQueryIntentHandler(AbstractRequestHandler):

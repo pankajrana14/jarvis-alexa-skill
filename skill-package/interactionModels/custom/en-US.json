@@ -2,7 +2,1207 @@
   "interactionModel": {
     "languageModel": {
       "invocationName": "jarvis",
+      "modelConfiguration": {
+        "fallbackIntentSensitivity": {
+          "level": "LOW"
+        }
+      },
       "intents": [
+        {
+          "name": "WhatQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "what {question}"
+          ]
+        },
+        {
+          "name": "WhatsQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "what's {question}"
+          ]
+        },
+        {
+          "name": "WhoQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "who {question}"
+          ]
+        },
+        {
+          "name": "WhosQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "who's {question}"
+          ]
+        },
+        {
+          "name": "WhoseQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "whose {question}"
+          ]
+        },
+        {
+          "name": "WhereQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "where {question}"
+          ]
+        },
+        {
+          "name": "WheresQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "where's {question}"
+          ]
+        },
+        {
+          "name": "WhenQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "when {question}"
+          ]
+        },
+        {
+          "name": "WhensQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "when's {question}"
+          ]
+        },
+        {
+          "name": "WhyQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "why {question}"
+          ]
+        },
+        {
+          "name": "HowQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "how {question}"
+          ]
+        },
+        {
+          "name": "HowsQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "how's {question}"
+          ]
+        },
+        {
+          "name": "WhichQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "which {question}"
+          ]
+        },
+        {
+          "name": "IsQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "is {question}"
+          ]
+        },
+        {
+          "name": "AreQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "are {question}"
+          ]
+        },
+        {
+          "name": "AmQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "am {question}"
+          ]
+        },
+        {
+          "name": "WasQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "was {question}"
+          ]
+        },
+        {
+          "name": "WereQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "were {question}"
+          ]
+        },
+        {
+          "name": "DoQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "do {question}"
+          ]
+        },
+        {
+          "name": "DoesQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "does {question}"
+          ]
+        },
+        {
+          "name": "DidQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "did {question}"
+          ]
+        },
+        {
+          "name": "CanQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "can {question}"
+          ]
+        },
+        {
+          "name": "CouldQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "could {question}"
+          ]
+        },
+        {
+          "name": "WillQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "will {question}"
+          ]
+        },
+        {
+          "name": "WouldQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "would {question}"
+          ]
+        },
+        {
+          "name": "ShouldQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "should {question}"
+          ]
+        },
+        {
+          "name": "ShallQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "shall {question}"
+          ]
+        },
+        {
+          "name": "MayQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "may {question}"
+          ]
+        },
+        {
+          "name": "MightQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "might {question}"
+          ]
+        },
+        {
+          "name": "MustQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "must {question}"
+          ]
+        },
+        {
+          "name": "HasQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "has {question}"
+          ]
+        },
+        {
+          "name": "HaveQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "have {question}"
+          ]
+        },
+        {
+          "name": "HadQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "had {question}"
+          ]
+        },
+        {
+          "name": "IsntQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "isn't {question}"
+          ]
+        },
+        {
+          "name": "ArentQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "aren't {question}"
+          ]
+        },
+        {
+          "name": "DontQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "don't {question}"
+          ]
+        },
+        {
+          "name": "DoesntQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "doesn't {question}"
+          ]
+        },
+        {
+          "name": "DidntQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "didn't {question}"
+          ]
+        },
+        {
+          "name": "CantQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "can't {question}"
+          ]
+        },
+        {
+          "name": "WontQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "won't {question}"
+          ]
+        },
+        {
+          "name": "WouldntQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "wouldn't {question}"
+          ]
+        },
+        {
+          "name": "ShouldntQuestionIntent",
+          "slots": [
+            {
+              "name": "question",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "shouldn't {question}"
+          ]
+        },
+        {
+          "name": "ExplainRequestIntent",
+          "slots": [
+            {
+              "name": "request",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "explain {request}",
+            "please explain {request}",
+            "can you explain {request}",
+            "could you explain {request}",
+            "would you explain {request}"
+          ]
+        },
+        {
+          "name": "DescribeRequestIntent",
+          "slots": [
+            {
+              "name": "request",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "describe {request}",
+            "please describe {request}",
+            "can you describe {request}",
+            "could you describe {request}",
+            "would you describe {request}"
+          ]
+        },
+        {
+          "name": "DefineRequestIntent",
+          "slots": [
+            {
+              "name": "request",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "define {request}",
+            "please define {request}",
+            "can you define {request}",
+            "could you define {request}",
+            "would you define {request}"
+          ]
+        },
+        {
+          "name": "CompareRequestIntent",
+          "slots": [
+            {
+              "name": "request",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "compare {request}",
+            "please compare {request}",
+            "can you compare {request}",
+            "could you compare {request}",
+            "would you compare {request}"
+          ]
+        },
+        {
+          "name": "TranslateRequestIntent",
+          "slots": [
+            {
+              "name": "request",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "translate {request}",
+            "please translate {request}",
+            "can you translate {request}",
+            "could you translate {request}",
+            "would you translate {request}"
+          ]
+        },
+        {
+          "name": "CalculateRequestIntent",
+          "slots": [
+            {
+              "name": "request",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "calculate {request}",
+            "please calculate {request}",
+            "can you calculate {request}",
+            "could you calculate {request}",
+            "would you calculate {request}"
+          ]
+        },
+        {
+          "name": "ConvertRequestIntent",
+          "slots": [
+            {
+              "name": "request",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "convert {request}",
+            "please convert {request}",
+            "can you convert {request}",
+            "could you convert {request}",
+            "would you convert {request}"
+          ]
+        },
+        {
+          "name": "SummarizeRequestIntent",
+          "slots": [
+            {
+              "name": "request",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "summarize {request}",
+            "please summarize {request}",
+            "can you summarize {request}",
+            "could you summarize {request}",
+            "would you summarize {request}"
+          ]
+        },
+        {
+          "name": "RecommendRequestIntent",
+          "slots": [
+            {
+              "name": "request",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "recommend {request}",
+            "please recommend {request}",
+            "can you recommend {request}",
+            "could you recommend {request}",
+            "would you recommend {request}"
+          ]
+        },
+        {
+          "name": "SuggestRequestIntent",
+          "slots": [
+            {
+              "name": "request",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "suggest {request}",
+            "please suggest {request}",
+            "can you suggest {request}",
+            "could you suggest {request}",
+            "would you suggest {request}"
+          ]
+        },
+        {
+          "name": "TellMeRequestIntent",
+          "slots": [
+            {
+              "name": "request",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "tell me {request}",
+            "please tell me {request}",
+            "can you tell me {request}",
+            "could you tell me {request}",
+            "would you tell me {request}"
+          ]
+        },
+        {
+          "name": "GiveMeRequestIntent",
+          "slots": [
+            {
+              "name": "request",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "give me {request}",
+            "please give me {request}",
+            "can you give me {request}",
+            "could you give me {request}",
+            "would you give me {request}"
+          ]
+        },
+        {
+          "name": "ShowMeRequestIntent",
+          "slots": [
+            {
+              "name": "request",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "show me {request}",
+            "please show me {request}",
+            "can you show me {request}",
+            "could you show me {request}",
+            "would you show me {request}"
+          ]
+        },
+        {
+          "name": "TeachMeRequestIntent",
+          "slots": [
+            {
+              "name": "request",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "teach me {request}",
+            "please teach me {request}",
+            "can you teach me {request}",
+            "could you teach me {request}",
+            "would you teach me {request}"
+          ]
+        },
+        {
+          "name": "HelpMeRequestIntent",
+          "slots": [
+            {
+              "name": "request",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "help me {request}",
+            "please help me {request}",
+            "can you help me {request}",
+            "could you help me {request}",
+            "would you help me {request}"
+          ]
+        },
+        {
+          "name": "FindRequestIntent",
+          "slots": [
+            {
+              "name": "request",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "find {request}",
+            "please find {request}",
+            "can you find {request}",
+            "could you find {request}",
+            "would you find {request}"
+          ]
+        },
+        {
+          "name": "LookUpRequestIntent",
+          "slots": [
+            {
+              "name": "request",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "look up {request}",
+            "please look up {request}",
+            "can you look up {request}",
+            "could you look up {request}",
+            "would you look up {request}"
+          ]
+        },
+        {
+          "name": "SearchForRequestIntent",
+          "slots": [
+            {
+              "name": "request",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "search for {request}",
+            "please search for {request}",
+            "can you search for {request}",
+            "could you search for {request}",
+            "would you search for {request}"
+          ]
+        },
+        {
+          "name": "GiveMeAdviceOnRequestIntent",
+          "slots": [
+            {
+              "name": "request",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "give me advice on {request}",
+            "please give me advice on {request}",
+            "can you give me advice on {request}",
+            "could you give me advice on {request}",
+            "would you give me advice on {request}"
+          ]
+        },
+        {
+          "name": "GiveMeAdviceAboutRequestIntent",
+          "slots": [
+            {
+              "name": "request",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "give me advice about {request}",
+            "please give me advice about {request}",
+            "can you give me advice about {request}",
+            "could you give me advice about {request}",
+            "would you give me advice about {request}"
+          ]
+        },
+        {
+          "name": "GiveMeTipsOnRequestIntent",
+          "slots": [
+            {
+              "name": "request",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "give me tips on {request}",
+            "please give me tips on {request}",
+            "can you give me tips on {request}",
+            "could you give me tips on {request}",
+            "would you give me tips on {request}"
+          ]
+        },
+        {
+          "name": "PleaseRequestIntent",
+          "slots": [
+            {
+              "name": "request",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "please {request}"
+          ]
+        },
+        {
+          "name": "LetsRequestIntent",
+          "slots": [
+            {
+              "name": "request",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "let's {request}"
+          ]
+        },
+        {
+          "name": "StoryRequestIntent",
+          "slots": [
+            {
+              "name": "topic",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "tell me a story about {topic}",
+            "please tell me a story about {topic}",
+            "can you tell me a story about {topic}",
+            "could you tell me a story about {topic}",
+            "would you tell me a story about {topic}",
+            "tell me a story",
+            "tell me a bedtime story"
+          ]
+        },
+        {
+          "name": "JokeRequestIntent",
+          "slots": [
+            {
+              "name": "topic",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "tell me a joke about {topic}",
+            "please tell me a joke about {topic}",
+            "can you tell me a joke about {topic}",
+            "could you tell me a joke about {topic}",
+            "would you tell me a joke about {topic}",
+            "tell me a joke",
+            "make me laugh",
+            "say something funny"
+          ]
+        },
+        {
+          "name": "PoemRequestIntent",
+          "slots": [
+            {
+              "name": "topic",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "write a poem about {topic}",
+            "please write a poem about {topic}",
+            "can you write a poem about {topic}",
+            "could you write a poem about {topic}",
+            "would you write a poem about {topic}",
+            "write a poem",
+            "write me a poem"
+          ]
+        },
+        {
+          "name": "IStatementIntent",
+          "slots": [
+            {
+              "name": "statement",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "I {statement}"
+          ]
+        },
+        {
+          "name": "ImStatementIntent",
+          "slots": [
+            {
+              "name": "statement",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "I'm {statement}"
+          ]
+        },
+        {
+          "name": "IAmStatementIntent",
+          "slots": [
+            {
+              "name": "statement",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "I am {statement}"
+          ]
+        },
+        {
+          "name": "IveStatementIntent",
+          "slots": [
+            {
+              "name": "statement",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "I've {statement}"
+          ]
+        },
+        {
+          "name": "IHaveStatementIntent",
+          "slots": [
+            {
+              "name": "statement",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "I have {statement}"
+          ]
+        },
+        {
+          "name": "IdStatementIntent",
+          "slots": [
+            {
+              "name": "statement",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "I'd {statement}"
+          ]
+        },
+        {
+          "name": "IWouldStatementIntent",
+          "slots": [
+            {
+              "name": "statement",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "I would {statement}"
+          ]
+        },
+        {
+          "name": "MyStatementIntent",
+          "slots": [
+            {
+              "name": "statement",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "my {statement}"
+          ]
+        },
+        {
+          "name": "WeStatementIntent",
+          "slots": [
+            {
+              "name": "statement",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "we {statement}"
+          ]
+        },
+        {
+          "name": "OurStatementIntent",
+          "slots": [
+            {
+              "name": "statement",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "our {statement}"
+          ]
+        },
+        {
+          "name": "ItsStatementIntent",
+          "slots": [
+            {
+              "name": "statement",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "it's {statement}"
+          ]
+        },
+        {
+          "name": "ThatsStatementIntent",
+          "slots": [
+            {
+              "name": "statement",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "that's {statement}"
+          ]
+        },
+        {
+          "name": "AndFollowUpIntent",
+          "slots": [
+            {
+              "name": "followup",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "and {followup}"
+          ]
+        },
+        {
+          "name": "AlsoFollowUpIntent",
+          "slots": [
+            {
+              "name": "followup",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "also {followup}"
+          ]
+        },
+        {
+          "name": "ButFollowUpIntent",
+          "slots": [
+            {
+              "name": "followup",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "but {followup}"
+          ]
+        },
+        {
+          "name": "SoFollowUpIntent",
+          "slots": [
+            {
+              "name": "followup",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "so {followup}"
+          ]
+        },
+        {
+          "name": "OrFollowUpIntent",
+          "slots": [
+            {
+              "name": "followup",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "or {followup}"
+          ]
+        },
+        {
+          "name": "ThenFollowUpIntent",
+          "slots": [
+            {
+              "name": "followup",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "then {followup}"
+          ]
+        },
+        {
+          "name": "ActuallyCorrectionIntent",
+          "slots": [
+            {
+              "name": "correction",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "actually {correction}"
+          ]
+        },
+        {
+          "name": "NoCorrectionIntent",
+          "slots": [
+            {
+              "name": "correction",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "no {correction}"
+          ]
+        },
+        {
+          "name": "NotCorrectionIntent",
+          "slots": [
+            {
+              "name": "correction",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "not {correction}"
+          ]
+        },
+        {
+          "name": "WaitCorrectionIntent",
+          "slots": [
+            {
+              "name": "correction",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "wait {correction}"
+          ]
+        },
+        {
+          "name": "SorryCorrectionIntent",
+          "slots": [
+            {
+              "name": "correction",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "sorry {correction}"
+          ]
+        },
         {
           "name": "QueryIntent",
           "slots": [
@@ -13,122 +1213,43 @@
           ],
           "samples": [
             "ask {query}",
-            "tell me {query}",
-            "tell me about {query}",
-            "what is {query}",
-            "what are {query}",
-            "what was {query}",
-            "what were {query}",
-            "what did {query}",
-            "what will {query}",
-            "what's {query}",
-            "who is {query}",
-            "who was {query}",
-            "who are {query}",
-            "who's {query}",
-            "where is {query}",
-            "where was {query}",
-            "where are {query}",
-            "where's {query}",
-            "when is {query}",
-            "when was {query}",
-            "when will {query}",
-            "when's {query}",
-            "how is {query}",
-            "how was {query}",
-            "how are {query}",
-            "how do {query}",
-            "how does {query}",
-            "how did {query}",
-            "how will {query}",
-            "how much is {query}",
-            "how much was {query}",
-            "how many {query}",
-            "how's {query}",
-            "why is {query}",
-            "why are {query}",
-            "why was {query}",
-            "why do {query}",
-            "why does {query}",
-            "which {query}",
-            "whose {query}",
-            "will {query}",
-            "should {query}",
-            "would {query}",
-            "could {query}",
-            "can {query}",
-            "did {query}",
-            "does {query}",
-            "is {query}",
-            "are {query}",
-            "was {query}",
-            "has {query}",
-            "have {query}",
-            "do {query}",
-            "search for {query}",
-            "look up {query}",
-            "look for {query}",
-            "find {query}",
-            "find me {query}",
-            "show me {query}",
-            "give me {query}",
-            "get me {query}",
-            "help me find {query}",
-            "can you find {query}",
-            "can you tell me {query}",
-            "can you explain {query}",
-            "can you show me {query}",
-            "explain {query}",
-            "describe {query}",
-            "define {query}",
-            "summarize {query}",
-            "compare {query}",
-            "recommend {query}",
-            "suggest {query}",
-            "translate {query}",
-            "calculate {query}",
-            "convert {query}",
-            "list {query}",
-            "I want {query}",
-            "I want to know {query}",
-            "I need {query}",
-            "I need to know {query}",
-            "I have a question about {query}",
-            "I'm looking for {query}",
-            "I am looking for {query}",
-            "I am {query}",
-            "I'm {query}",
-            "I'm currently {query}",
-            "I live in {query}",
-            "I'm from {query}",
-            "I work in {query}",
-            "I work at {query}",
-            "I like {query}",
-            "I prefer {query}",
-            "my location is {query}",
-            "my name is {query}",
-            "remember that {query}",
-            "note that {query}",
-            "just so you know {query}",
-            "do you know {query}",
-            "do you know about {query}",
-            "what about {query}",
-            "any {query}",
-            "are there {query}",
-            "what happened {query}",
-            "what's the {query}",
-            "news about {query}",
-            "latest news on {query}",
-            "updates on {query}",
-            "tell me the latest {query}",
-            "do you remember {query}",
-            "do you recall {query}",
-            "what do you know about {query}",
-            "what do you remember about {query}",
-            "have you heard about {query}",
-            "do you have information about {query}",
-            "what information do you have about {query}",
-            "what information do you have on {query}"
+            "say {query}",
+            "my question is {query}",
+            "here's my question {query}",
+            "question {query}",
+            "jarvis {query}",
+            "tell jarvis {query}",
+            "I want to ask {query}"
+          ]
+        },
+        {
+          "name": "RememberIntent",
+          "slots": [
+            {
+              "name": "fact",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "remember that {fact}",
+            "remember {fact}",
+            "please remember {fact}",
+            "please remember that {fact}",
+            "can you remember that {fact}",
+            "note that {fact}",
+            "make a note that {fact}",
+            "take a note that {fact}",
+            "save that {fact}",
+            "keep in mind that {fact}",
+            "don't forget that {fact}",
+            "write down that {fact}",
+            "store that {fact}",
+            "memorize that {fact}",
+            "remember this {fact}",
+            "remember this",
+            "remember something",
+            "save a note",
+            "take a note"
           ]
         },
         {
@@ -200,7 +1321,16 @@
         },
         {
           "name": "AMAZON.StopIntent",
-          "samples": ["stop", "goodbye", "exit", "quit", "bye", "that's all", "see you", "farewell"]
+          "samples": [
+            "stop",
+            "goodbye",
+            "exit",
+            "quit",
+            "bye",
+            "that's all",
+            "see you",
+            "farewell"
+          ]
         },
         {
           "name": "AMAZON.YesIntent",
@@ -222,7 +1352,8 @@
           "name": "AMAZON.FallbackIntent",
           "samples": []
         }
-      ]
+      ],
+      "types": []
     }
   }
 }
