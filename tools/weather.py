@@ -1,9 +1,12 @@
 """Current weather from Open-Meteo (https://open-meteo.com): free, no API key, plain JSON.
 
-Web search is unreliable for "what's the weather": results mix live readings with
-monthly climate pages, and the model then extrapolates seasonal ranges. This tool
-returns one structured, timestamped reading plus the forecast for today and the
-next 12 hours, and says plainly when data is stale or unavailable.
+Web search was unreliable for "what's the weather": results mixed current-conditions
+data with monthly climate pages, and the model extrapolated seasonal ranges. This tool
+returns one structured, timestamped current estimate plus the forecast for today and
+the next 12 hours, and says plainly when data is stale or unavailable.
+
+Open-Meteo's "current" values are weather-model estimates for a 15-minute interval,
+not station measurements, so the output says "model estimate", never "reading".
 """
 import logging
 from datetime import datetime, timedelta, timezone
@@ -17,7 +20,7 @@ GEOCODE_URL = "https://geocoding-api.open-meteo.com/v1/search"
 FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
 TIMEOUT = 2.5            # seconds per call; Alexa allows ~8s for the whole turn
 STALE_AFTER = timedelta(hours=3)
-SOURCE = "Open-Meteo (model-based current conditions, updated every 15 minutes)"
+SOURCE = "Open-Meteo (weather-model estimates for 15-minute intervals, not station measurements)"
 
 # WMO weather interpretation codes, as used by Open-Meteo.
 WMO = {
@@ -124,28 +127,29 @@ def get_weather(location: str, country_code: Optional[str] = None, now: Optional
         resp.raise_for_status()
         data = resp.json()
         cur = data["current"]
-        observed_local = datetime.strptime(cur["time"], "%Y-%m-%dT%H:%M")
-        observed_utc = (observed_local - timedelta(seconds=data.get("utc_offset_seconds", 0))).replace(tzinfo=timezone.utc)
+        valid_local = datetime.strptime(cur["time"], "%Y-%m-%dT%H:%M")  # start of the 15-minute interval
+        valid_utc = (valid_local - timedelta(seconds=data.get("utc_offset_seconds", 0))).replace(tzinfo=timezone.utc)
         temp = cur["temperature_2m"]
     except Exception as e:
         logger.warning("Weather fetch failed for %r: %s", location, e)
         return _unavailable("the weather service did not return current conditions")
 
     name = ", ".join(p for p in (place.get("name"), place.get("admin1"), place.get("country")) if p)
-    age = now - observed_utc
+    age = now - valid_utc
     age_min = max(0, int(age.total_seconds() // 60))
+    valid_at = cur["time"].replace("T", " ")
     lines = [
         f"WEATHER DATA from {SOURCE}.",
         f"Location: {name} ({place['latitude']:.2f}, {place['longitude']:.2f}), timezone {data.get('timezone')}.",
     ]
     if age > STALE_AFTER:
         lines.append(
-            f"WARNING: this reading is STALE ({age.total_seconds() / 3600:.1f} hours old). Do not present it "
-            f"as current conditions; say the latest available reading is from {cur['time'].replace('T', ' ')} local time."
+            f"WARNING: this estimate is STALE ({age.total_seconds() / 3600:.1f} hours old). Do not present it "
+            f"as current conditions; say the latest available estimate is for {valid_at} local time."
         )
     current = (
-        f"Current conditions as of {cur['time'].replace('T', ' ')} local time ({age_min} minutes ago): "
-        f"{_c(temp)}"
+        f"Current model estimate for the 15-minute interval starting {valid_at} local time "
+        f"({age_min} minutes ago): {_c(temp)}"
     )
     if cur.get("apparent_temperature") is not None:
         current += f", feels like {_c(cur['apparent_temperature'])}"

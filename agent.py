@@ -101,7 +101,7 @@ Rules:
 - For any other question about current events, news, sports, prices, or anything that may have changed recently, you MUST call search_web before answering. Never answer these from memory.
 - Always include the current year in search queries so results are up to date.
 - Only state numbers, conditions and times that appear in a tool result. Never fill gaps with seasonal or monthly averages, climate norms, or your own estimates, and never apply a seasonal or monthly range to a specific day or time such as tonight.
-- For current weather, give the temperature and conditions and say when the reading was taken. Use the next-hours forecast for questions about tonight or the coming hours.
+- For current weather, give the temperature and conditions and the time they apply to. They are weather-model estimates, so call them "current estimates" or "about"; do not call them measurements or say they were recorded. Use the next-hours forecast for questions about tonight or the coming hours.
 - If a tool says data is unavailable, stale, or the place was not found, say exactly that in one sentence instead of answering.
 - Use read_wiki for personal questions about the user.
 - Use update_wiki to remember new user facts at session end.
@@ -167,9 +167,10 @@ def _resolve_model() -> str:
     return model
 
 
-# Claude Messages API over plain HTTP. The official `anthropic` SDK pulls in compiled
-# packages (pydantic-core, jiter) that the Alexa-hosted Python 3.8 build fails to
-# install; `requests` is pure Python and already a dependency.
+# Claude Messages API over plain HTTP. Hosted deploys that included the `anthropic` SDK
+# (or litellm) left the Lambda without our code; their compiled dependencies
+# (pydantic-core, jiter) are the suspected cause, but the build error itself was never
+# seen. The pure-Python package with `requests` deploys and runs, so keep it that way.
 _API_URL = "https://api.anthropic.com/v1/messages"
 _API_VERSION = "2023-06-01"
 _RETRYABLE = {408, 409, 429, 500, 502, 503, 504, 529}

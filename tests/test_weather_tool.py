@@ -177,3 +177,29 @@ def test_system_prompt_forbids_ungrounded_and_seasonal_answers():
     prompt = agent._SYSTEM_PROMPT.lower()
     assert "get_weather" in prompt
     assert "seasonal" in prompt and "never" in prompt
+
+
+def test_current_values_are_described_as_model_estimates_not_measurements():
+    with patch("tools.weather.requests.get", side_effect=_get_router()):
+        out = weather.get_weather("Berlin", now=NOW).lower()
+
+    assert "model estimate" in out
+    assert "15-minute" in out
+    for overclaim in ("reading", "observ", "measured", "taken at"):
+        assert overclaim not in out, overclaim
+
+
+def test_stale_warning_also_uses_estimate_wording():
+    old = _forecast(current_time="2026-11-04T14:00")
+    with patch("tools.weather.requests.get", side_effect=_get_router(forecast=old)):
+        out = weather.get_weather("Berlin", now=NOW).lower()
+
+    assert "latest available estimate" in out
+    assert "reading" not in out
+
+
+def test_system_prompt_requires_estimate_wording_for_weather():
+    import agent
+    prompt = agent._SYSTEM_PROMPT.lower()
+    assert "estimate" in prompt
+    assert "reading" not in prompt and "measured" not in prompt.replace("never say", "")

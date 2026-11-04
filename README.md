@@ -39,7 +39,7 @@ Per-model request settings live in `_MODEL_PARAMS` in `agent.py`. `agent.py` als
 
 ### Where answers come from
 
-- **Weather** uses the `get_weather` tool (`tools/weather.py`), backed by [Open-Meteo](https://open-meteo.com/) (no API key; free for non-commercial use, data under CC BY 4.0). It geocodes the place, then returns timestamped current conditions, today's high/low and the next 12 hours. Web search isn't used for weather: its results mix live readings with monthly climate pages, and the model would extrapolate seasonal ranges into "tonight".
+- **Weather** uses the `get_weather` tool (`tools/weather.py`), backed by [Open-Meteo](https://open-meteo.com/) (no API key; free for non-commercial use, data under CC BY 4.0). It geocodes the place, then returns the current conditions with the time they apply to, today's high/low and the next 12 hours. Open-Meteo's current values are weather-model estimates for 15-minute intervals, not station measurements, and Jarvis is told to describe them that way. Web search isn't used for weather: in testing, its results mixed current-conditions data with monthly climate pages, and the model extrapolated seasonal ranges into "tonight".
 - **Everything else current** (news, prices, scores) uses Tavily via `search_web`.
 - The system prompt in `agent.py` only lets the model state values that appear in a tool result, and to say plainly when data is unavailable, stale or not found.
 - Every tool call and a preview of its result is logged (`tool <name> <input> -> <result>`), so CloudWatch shows exactly what an answer was based on.
@@ -52,7 +52,7 @@ pytest
 
 ## Option A: Alexa-hosted skill (recommended)
 
-Why the code looks the way it does: Alexa-hosted skills run **Python 3.8** and install `requirements.txt` themselves, and their build can't install compiled packages (pydantic-core, jiter, tokenizers). So `requirements.txt` is kept **pure Python**, and `agent.py` calls the Claude API with `requests` instead of the `anthropic` SDK or litellm. Hosted skills also can't have Lambda environment variables edited, so the API keys ship inside the upload as `lambda/jarvis.env` (loaded by `config.py`), and the wiki uses the bucket Alexa provides (`S3_PERSISTENCE_BUCKET`).
+Why the code looks the way it does: Alexa-hosted skills run **Python 3.8** and install `requirements.txt` themselves. Deploys that included litellm or the `anthropic` SDK left the hosted Lambda without our code (`No module named 'lambda_function'`). Their compiled dependencies (pydantic-core, jiter, tokenizers) are the suspected cause, but the hosted build log was never retrieved, so that isn't confirmed. What is established: with `requirements.txt` kept **pure Python** and `agent.py` calling the Claude API with `requests`, the package deploys and runs. Hosted skills also can't have Lambda environment variables edited, so the API keys ship inside the upload as `lambda/jarvis.env` (loaded by `config.py`), and the wiki uses the bucket Alexa provides (`S3_PERSISTENCE_BUCKET`).
 
 ### First-time setup
 
@@ -217,7 +217,7 @@ Any unhandled error in the skill is now logged and spoken as "I ran into a probl
      aws logs tail /aws/lambda/jarvis --follow --region eu-central-1
      ```
      Trigger the skill again in the simulator while this is running and watch the output.
-3. **`Runtime.ImportModuleError: No module named 'lambda_function'`** (Option A) → the deploy never put your code on the Lambda; the deploy itself failed. Usually a dependency the hosted Python 3.8 build can't install — keep `requirements.txt` pure Python.
+3. **`Runtime.ImportModuleError: No module named 'lambda_function'`** (Option A) → the deploy never put your code on the Lambda; the deploy itself failed. Get the build error from the deploy's **View** link (CloudWatch). For this project it happened with compiled dependencies in `requirements.txt` and stopped once they were removed, so keep `requirements.txt` pure Python.
 4. **`ImportModuleError` naming another module** (Option B) → dependencies weren't installed for Lambda's Linux runtime. Re-run `python scripts/deploy.py` (it installs with `--platform manylinux2014_x86_64`); don't `pip install` locally and zip that up directly on Windows/macOS.
 5. **`invalid x-api-key`** → the key in `.env`/`jarvis.env` is incomplete or wrapped onto a second line; re-copy it with the console's Copy button. **`credit balance is too low`** → the key is valid but its organisation has no API credit; check **Billing** on platform.claude.com for the same organisation.
 6. **"I'm taking too long to answer that"** → a turn hit the 7-second cap; usually a slow web search or a slower model. Prefer `claude-haiku-5-5`.
