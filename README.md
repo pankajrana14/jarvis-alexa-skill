@@ -37,6 +37,13 @@ Alexa abandons a skill turn after about **8 seconds**, so latency matters more t
 
 Per-model request settings live in `_MODEL_PARAMS` in `agent.py`. `agent.py` also caps a whole turn at 7 seconds and says "I'm taking too long" instead of letting Alexa time out.
 
+### Where answers come from
+
+- **Weather** uses the `get_weather` tool (`tools/weather.py`), backed by [Open-Meteo](https://open-meteo.com/) (no API key; free for non-commercial use, data under CC BY 4.0). It geocodes the place, then returns timestamped current conditions, today's high/low and the next 12 hours. Web search isn't used for weather: its results mix live readings with monthly climate pages, and the model would extrapolate seasonal ranges into "tonight".
+- **Everything else current** (news, prices, scores) uses Tavily via `search_web`.
+- The system prompt in `agent.py` only lets the model state values that appear in a tool result, and to say plainly when data is unavailable, stale or not found.
+- Every tool call and a preview of its result is logged (`tool <name> <input> -> <result>`), so CloudWatch shows exactly what an answer was based on.
+
 ## Running tests
 
 ```bash

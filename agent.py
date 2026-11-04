@@ -1,3 +1,5 @@
+import json
+import logging
 import os
 import signal
 import time
@@ -16,15 +18,37 @@ except Exception:  # Python 3.8 (Alexa-hosted skills): no zoneinfo module
     _BERLIN = tz.gettz("Europe/Berlin")
 
 from tools.search import search_web
+from tools.weather import get_weather
 from tools.wiki import read_wiki, update_wiki
 from wiki_manager import WikiManager
 
+logger = logging.getLogger(__name__)
+
 TOOLS = [
+    {
+        "name": "get_weather",
+        "description": (
+            "Get current weather conditions (timestamped), today's high and low, and the forecast for "
+            "the next 12 hours for a place. Always use this for any weather, temperature, rain, wind "
+            "or 'tonight'/'tomorrow morning' question instead of search_web."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "location": {"type": "string", "description": "City or place name only, e.g. 'Berlin'"},
+                "country_code": {
+                    "type": "string",
+                    "description": "Optional ISO 3166-1 alpha-2 country code to disambiguate, e.g. 'DE'",
+                },
+            },
+            "required": ["location"],
+        },
+    },
     {
         "name": "search_web",
         "description": (
             "Search the internet for current, real-time, or factual information. "
-            "Use for news, weather, prices, sports scores, or recent events."
+            "Use for news, prices, sports scores, or recent events. Not for weather."
         ),
         "input_schema": {
             "type": "object",
@@ -73,8 +97,12 @@ _SYSTEM_PROMPT = """You are Jarvis, a voice assistant on Amazon Alexa. Be brief.
 Rules:
 - 2-4 sentences maximum. Never more.
 - Natural spoken English only. No lists, bullet points, or markdown.
-- For ANY question about current events, news, weather, sports, prices, or anything that may have changed recently, you MUST call search_web before answering. Never answer these from memory.
+- For ANY weather question, call get_weather. Do not use search_web for weather.
+- For any other question about current events, news, sports, prices, or anything that may have changed recently, you MUST call search_web before answering. Never answer these from memory.
 - Always include the current year in search queries so results are up to date.
+- Only state numbers, conditions and times that appear in a tool result. Never fill gaps with seasonal or monthly averages, climate norms, or your own estimates, and never apply a seasonal or monthly range to a specific day or time such as tonight.
+- For current weather, give the temperature and conditions and say when the reading was taken. Use the next-hours forecast for questions about tonight or the coming hours.
+- If a tool says data is unavailable, stale, or the place was not found, say exactly that in one sentence instead of answering.
 - Use read_wiki for personal questions about the user.
 - Use update_wiki to remember new user facts at session end.
 
@@ -84,7 +112,9 @@ Current personal wiki index:
 _FALLBACK = "I encountered an issue. Please try again."
 
 
-def _execute_tool(name: str, inputs: Dict[str, Any], wiki_manager: WikiManager) -> str:
+def _run_tool(name: str, inputs: Dict[str, Any]) -> str:
+    if name == "get_weather":
+        return get_weather(inputs["location"], country_code=inputs.get("country_code"))
     if name == "search_web":
         return search_web(inputs["query"])
     if name == "read_wiki":
@@ -92,6 +122,13 @@ def _execute_tool(name: str, inputs: Dict[str, Any], wiki_manager: WikiManager) 
     if name == "update_wiki":
         return update_wiki(inputs["topic"], inputs["content"])
     return f"Unknown tool: {name}"
+
+
+def _execute_tool(name: str, inputs: Dict[str, Any], wiki_manager: WikiManager) -> str:
+    result = _run_tool(name, inputs)
+    # Logged so CloudWatch shows exactly what the model asked for and was given.
+    logger.info("tool %s %s -> %s", name, json.dumps(inputs)[:200], result[:500].replace("\n", " | "))
+    return result
 
 
 class _AgentTimeout(Exception):

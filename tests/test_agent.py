@@ -119,7 +119,7 @@ def test_run_agent_sends_tools_in_anthropic_format():
     _run(client)
 
     tools = client.calls[-1]["tools"]
-    assert {t["name"] for t in tools} == {"search_web", "read_wiki", "update_wiki"}
+    assert {t["name"] for t in tools} == {"get_weather", "search_web", "read_wiki", "update_wiki"}
     assert all("input_schema" in t and "description" in t for t in tools)
 
 

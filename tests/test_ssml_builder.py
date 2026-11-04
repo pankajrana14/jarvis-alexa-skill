@@ -48,3 +48,11 @@ def test_clean_for_speech_truncates_at_500_words():
     long_text = "word " * 600
     result = clean_for_speech(long_text)
     assert len(result.split()) == 500  # "." appended to last word, not as separate token
+
+
+def test_clean_for_speech_spells_out_weather_units():
+    from ssml_builder import clean_for_speech
+    out = clean_for_speech("It's 8.3°C (46.9°F), feels like -2°C, wind 6 km/h (4 mph), 72% humidity.")
+    assert out == ("It's 8.3 degrees Celsius (46.9 degrees Fahrenheit), feels like minus 2 degrees Celsius, "
+                   "wind 6 kilometers per hour (4 miles per hour), 72 percent humidity.")
+    assert "°" not in out
