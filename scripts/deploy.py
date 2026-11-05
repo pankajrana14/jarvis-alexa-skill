@@ -81,7 +81,7 @@ def main():
     run([
         "aws", "lambda", "update-function-code",
         "--function-name", FUNCTION_NAME,
-        "--zip-file", f"fileb://lambda.zip",
+        "--zip-file", "fileb://lambda.zip",
         "--region", REGION,
         "--output", "text"
     ])

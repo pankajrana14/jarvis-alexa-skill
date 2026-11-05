@@ -160,7 +160,7 @@ class _AgentTimeout(Exception):
     pass
 
 
-def _timeout_handler(signum, frame):
+def _timeout_handler(_signum, _frame):  # signal.signal always passes (signum, frame)
     raise _AgentTimeout()
 
 

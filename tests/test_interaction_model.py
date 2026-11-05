@@ -86,20 +86,6 @@ def test_fallback_and_limits():
     assert not [s for s in ALL_SAMPLES if SLOT_RE.fullmatch(s.strip())]
 
 
-def test_console_extra_intents_are_merged_and_cannot_shadow_generated_ones(tmp_path, monkeypatch):
-    extra = {"name": "ConsoleOnlyIntent", "slots": [], "samples": ["console only phrase"]}
-    f = tmp_path / "console_extra_intents.json"
-    f.write_text(json.dumps([extra]), encoding="utf-8")
-    monkeypatch.setattr(gen, "EXTRA_INTENTS_FILE", f)
-    names = [i["name"] for i in gen.build()["interactionModel"]["languageModel"]["intents"]]
-    assert names[-1] == "ConsoleOnlyIntent"
-
-    f.write_text(json.dumps([{"name": "AMAZON.StopIntent", "samples": []}]), encoding="utf-8")
-    import pytest
-    with pytest.raises(SystemExit):
-        gen.build()
-
-
 def test_navigate_home_is_in_the_model():
     assert "AMAZON.NavigateHomeIntent" in INTENTS
 

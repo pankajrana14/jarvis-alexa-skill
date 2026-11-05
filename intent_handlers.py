@@ -129,23 +129,10 @@ class UtteranceIntentHandler(AbstractRequestHandler):
         return _handle_query(handler_input, text)
 
 
-def _slot_resolution(slot):
-    """(status code, [value ids]) from a slot's first resolution authority, or (None, [])."""
-    try:
-        authority = slot.resolutions.resolutions_per_authority[0]
-        code = authority.status.code
-        code = getattr(code, "value", code)
-        ids = [v.value.id for v in (authority.values or [])]
-        return code, ids
-    except (AttributeError, IndexError, TypeError):
-        return None, []
-
-
 class RequestLoggingInterceptor(AbstractRequestInterceptor):
-    """Log every request's intent and raw slot text (plus entity-resolution status, for any
-    custom slot types) to CloudWatch. Intent History needs 10+ unique users a day, so this
-    is how we see what Alexa's speech recognition actually produced, e.g. for German words
-    spoken inside English sentences."""
+    """Log every request's intent and raw slot text to CloudWatch. Intent History needs 10+
+    unique users a day, so this is how we see what Alexa's speech recognition actually
+    produced, e.g. for German words spoken inside English sentences."""
 
     def process(self, handler_input: HandlerInput) -> None:
         try:
@@ -154,12 +141,8 @@ class RequestLoggingInterceptor(AbstractRequestInterceptor):
             if intent is None:
                 logger.info("request %s", type(request).__name__)
                 return
-            parts = []
-            for name, slot in (intent.slots or {}).items():
-                if slot is None or slot.value is None:
-                    continue
-                code, ids = _slot_resolution(slot)
-                parts.append(f"{name}={slot.value!r}" + (f" [{code} {','.join(ids)}]" if code else ""))
+            parts = [f"{name}={slot.value!r}" for name, slot in (intent.slots or {}).items()
+                     if slot is not None and slot.value is not None]
             logger.info("request %s %s", intent.name, " ".join(parts))
         except Exception as e:  # logging must never break a request
             logger.warning("request logging failed: %s", e)

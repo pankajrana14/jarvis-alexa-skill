@@ -32,19 +32,21 @@ Alexa abandons a skill turn after about **8 seconds**, so latency matters more t
 
 | `LLM_MODEL` | Typical time | Notes |
 |---|---|---|
-| `claude-haiku-5-5` | ~1s / ~2.5–4s | Recommended. Thinking is turned off in `agent.py` |
+| `claude-haiku-5-5` | ~1–2s / ~3.5–6s | Recommended. Adaptive thinking at `low` effort, `max_tokens` 1024 |
 | `claude-sonnet-5-5` | ~2–7s / ~4–12s | Better answers but too variable for Alexa; thinking set to `between_tools` |
 
-Per-model request settings live in `_MODEL_PARAMS` in `agent.py`. `agent.py` also caps a whole turn at 7 seconds and says "I'm taking too long" instead of letting Alexa time out.
+Per-model request settings live in `_MODEL_PARAMS` in `agent.py`. Don't disable Haiku's thinking: without it, Haiku wrote its reasoning into the spoken reply on garbled questions and ran out of tokens. `agent.py` also caps a whole turn at 7 seconds and says "I'm taking too long" instead of letting Alexa time out.
 
 ### Where answers come from
 
 - **Weather** uses the `get_weather` tool (`tools/weather.py`), backed by [Open-Meteo](https://open-meteo.com/) (no API key; free for non-commercial use, data under CC BY 4.0). It geocodes the place, then returns the current conditions with the time they apply to, today's high/low and the next 12 hours. Open-Meteo's current values are weather-model estimates for 15-minute intervals, not station measurements, and Jarvis is told to describe them that way. Web search isn't used for weather: in testing, its results mixed current-conditions data with monthly climate pages, and the model extrapolated seasonal ranges into "tonight".
 - **Everything else current** (news, prices, scores) uses Tavily via `search_web`.
-- The system prompt in `agent.py` only lets the model state values that appear in a tool result, and to say plainly when data is unavailable, stale or not found.
+- The system prompt in `agent.py` only lets the model state values that appear in a tool result, and to say plainly when data is unavailable, stale or not found. Money and legal claims (whether there's a fee or deposit, amounts, obligations, comparisons) need a `search_web` source, and answers stick to what was asked.
 - **What reaches Jarvis**: Alexa only sends slot values, never the full sentence. `utterance_frames.py` defines about 90 intents whose carrier phrase *is* the opening words (`what`, `what's`, `is`, `can`, `explain`, `I`, `my`, `and`, `actually`, ...), so the handler rebuilds the user's words exactly ("I prefer tea" → `IStatementIntent` + "prefer tea"). The interaction model JSON is generated from it: edit `utterance_frames.py`, run `python scripts/build_interaction_model.py`, paste `skill-package/interactionModels/custom/en-US.json` into the console's JSON Editor and **Build skill**. `tests/test_interaction_model.py` checks the JSON against Amazon's SearchQuery and sample rules.
-- **Memory**: only explicit requests ("remember that …", "note that …", "save that …") are saved, immediately, to `wiki/user/profile.md`. Jarvis says it was saved only if the write succeeded. Other personal statements are conversation context only. Saved notes are given to the model on every turn.
-- Every tool call and a preview of its result is logged (`tool <name> <input> -> <result>`), so CloudWatch shows exactly what an answer was based on.
+- **Memory**: only explicit requests ("remember that …", "note that …", "save that …") are saved, immediately, to `wiki/user/profile.md`. Jarvis says it was saved only if the write succeeded. Other personal statements are conversation context only. The model's own `update_wiki` tool is blocked in code unless the current message contains explicit save words, so a bare "yes" can never save a fact. Saved notes are given to the model on every turn.
+- **Yes/no and continuations**: "yes …", "yeah …", "yep …" and "okay …" keep every following word. A bare "yes" or "no" reaches the model as "Yes."/"No." and answers only its last question.
+- **German words in English sentences**: Alexa's English speech recognition writes German words as English-sounding text, and a skill never gets the audio, so there's no word list. When part of a message looks garbled and German is plausible, the model treats its guess as a guess, asks "Did you mean …?" before answering or searching, and otherwise asks the user to repeat or spell the word ("it's spelled m e h r …"). Correctly recognized German is answered directly; English words keep their English meaning. Recognition can't be guaranteed for every German word.
+- Every request's intent and slot text (`request <Intent> slot='…'`) and every tool call with a preview of its result (`tool <name> <input> -> <result>`) are logged, so CloudWatch shows what Alexa heard and what an answer was based on.
 
 ## Running tests
 
