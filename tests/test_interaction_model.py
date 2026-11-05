@@ -29,7 +29,7 @@ def test_samples_are_unique_across_all_intents():
 
 def test_samples_follow_amazon_text_rules():
     # words as letters, apostrophes for contractions, braces for slots; no digits or other punctuation
-    bad = [s for s in ALL_SAMPLES if not re.fullmatch(r"[A-Za-z' {}]+", s)]
+    bad = [s for s in ALL_SAMPLES if not re.fullmatch(r"[A-Za-z' ]+", SLOT_RE.sub("", s))]
     assert not bad
 
 
@@ -42,9 +42,10 @@ def test_search_query_rules():
             assert len(slots) == 1, f"{intent['name']}: SearchQuery can't share a sample with other slots"
         for sample in intent.get("samples", []):
             used = SLOT_RE.findall(sample)
-            assert len(used) <= 1, sample
+            if search:
+                assert len(used) <= 1, sample
+            assert set(used) <= {s["name"] for s in slots}, sample
             if used:
-                assert used[0] in {s["name"] for s in slots}, sample
                 carrier = SLOT_RE.sub("", sample).strip()
                 assert carrier, f"{intent['name']}: '{sample}' has no carrier phrase"
 
@@ -83,3 +84,38 @@ def test_fallback_and_limits():
     assert MODEL_PATH.stat().st_size < 1.5 * 1024 * 1024
     # no standalone slot-only samples anywhere
     assert not [s for s in ALL_SAMPLES if SLOT_RE.fullmatch(s.strip())]
+
+
+def test_console_extra_intents_are_merged_and_cannot_shadow_generated_ones(tmp_path, monkeypatch):
+    extra = {"name": "ConsoleOnlyIntent", "slots": [], "samples": ["console only phrase"]}
+    f = tmp_path / "console_extra_intents.json"
+    f.write_text(json.dumps([extra]), encoding="utf-8")
+    monkeypatch.setattr(gen, "EXTRA_INTENTS_FILE", f)
+    names = [i["name"] for i in gen.build()["interactionModel"]["languageModel"]["intents"]]
+    assert names[-1] == "ConsoleOnlyIntent"
+
+    f.write_text(json.dumps([{"name": "AMAZON.StopIntent", "samples": []}]), encoding="utf-8")
+    import pytest
+    with pytest.raises(SystemExit):
+        gen.build()
+
+
+def test_navigate_home_is_in_the_model():
+    assert "AMAZON.NavigateHomeIntent" in INTENTS
+
+
+def test_yes_style_continuations_have_carriers_and_plain_yes_stays_builtin():
+    for lead in ("yes", "yeah", "yep", "okay"):
+        frame = next(f for f in FRAMES.values() if f.lead == lead)
+        assert frame.kind == "followup"
+        assert f"{lead} {{{frame.slot}}}" in samples(frame)
+    custom_samples = [s.lower() for i in LM["intents"] if not i["name"].startswith("AMAZON.") for s in i.get("samples", [])]
+    assert "yes" not in custom_samples and "yeah" not in custom_samples
+    assert "AMAZON.YesIntent" in INTENTS
+
+
+def test_no_custom_word_lists_and_spelling_carriers_exist():
+    assert LM["types"] == []
+    assert not [i["name"] for i in LM["intents"] if i["name"].startswith("GermanTerm")]
+    for carrier in ("it's spelled {statement}", "spelled {statement}"):
+        assert carrier in ALL_SAMPLES

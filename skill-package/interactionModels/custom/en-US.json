@@ -1072,6 +1072,42 @@
           ]
         },
         {
+          "name": "ItsSpelledStatementIntent",
+          "slots": [
+            {
+              "name": "statement",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "it's spelled {statement}"
+          ]
+        },
+        {
+          "name": "ItIsSpelledStatementIntent",
+          "slots": [
+            {
+              "name": "statement",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "it is spelled {statement}"
+          ]
+        },
+        {
+          "name": "SpelledStatementIntent",
+          "slots": [
+            {
+              "name": "statement",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "spelled {statement}"
+          ]
+        },
+        {
           "name": "AndFollowUpIntent",
           "slots": [
             {
@@ -1141,6 +1177,54 @@
           ],
           "samples": [
             "then {followup}"
+          ]
+        },
+        {
+          "name": "YesFollowUpIntent",
+          "slots": [
+            {
+              "name": "followup",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "yes {followup}"
+          ]
+        },
+        {
+          "name": "YeahFollowUpIntent",
+          "slots": [
+            {
+              "name": "followup",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "yeah {followup}"
+          ]
+        },
+        {
+          "name": "YepFollowUpIntent",
+          "slots": [
+            {
+              "name": "followup",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "yep {followup}"
+          ]
+        },
+        {
+          "name": "OkayFollowUpIntent",
+          "slots": [
+            {
+              "name": "followup",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "okay {followup}"
           ]
         },
         {
@@ -1350,6 +1434,10 @@
         },
         {
           "name": "AMAZON.FallbackIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.NavigateHomeIntent",
           "samples": []
         }
       ],

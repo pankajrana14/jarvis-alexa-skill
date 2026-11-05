@@ -7,6 +7,8 @@ from ask_sdk_model.services.directive import SendDirectiveRequest, Header, Speak
 
 from datetime import datetime, timezone
 
+from ask_sdk_core.dispatch_components import AbstractRequestInterceptor
+
 from agent import run_agent
 from tools.wiki import update_wiki
 from utterance_frames import FRAMES, reconstruct
@@ -127,6 +129,42 @@ class UtteranceIntentHandler(AbstractRequestHandler):
         return _handle_query(handler_input, text)
 
 
+def _slot_resolution(slot):
+    """(status code, [value ids]) from a slot's first resolution authority, or (None, [])."""
+    try:
+        authority = slot.resolutions.resolutions_per_authority[0]
+        code = authority.status.code
+        code = getattr(code, "value", code)
+        ids = [v.value.id for v in (authority.values or [])]
+        return code, ids
+    except (AttributeError, IndexError, TypeError):
+        return None, []
+
+
+class RequestLoggingInterceptor(AbstractRequestInterceptor):
+    """Log every request's intent and raw slot text (plus entity-resolution status, for any
+    custom slot types) to CloudWatch. Intent History needs 10+ unique users a day, so this
+    is how we see what Alexa's speech recognition actually produced, e.g. for German words
+    spoken inside English sentences."""
+
+    def process(self, handler_input: HandlerInput) -> None:
+        try:
+            request = handler_input.request_envelope.request
+            intent = getattr(request, "intent", None)
+            if intent is None:
+                logger.info("request %s", type(request).__name__)
+                return
+            parts = []
+            for name, slot in (intent.slots or {}).items():
+                if slot is None or slot.value is None:
+                    continue
+                code, ids = _slot_resolution(slot)
+                parts.append(f"{name}={slot.value!r}" + (f" [{code} {','.join(ids)}]" if code else ""))
+            logger.info("request %s %s", intent.name, " ".join(parts))
+        except Exception as e:  # logging must never break a request
+            logger.warning("request logging failed: %s", e)
+
+
 class RememberIntentHandler(AbstractRequestHandler):
     """Explicit 'remember that ...' requests: save to the user's wiki profile right away,
     and only say it was saved if the save actually succeeded."""
@@ -206,7 +244,8 @@ class YesIntentHandler(AbstractRequestHandler):
         return is_intent_name("AMAZON.YesIntent")(handler_input)
 
     def handle(self, handler_input: HandlerInput) -> Response:
-        return _handle_query(handler_input, "Yes, please go ahead.")
+        # Plain "Yes." so it answers only the last question, never an older offer.
+        return _handle_query(handler_input, "Yes.")
 
 
 class NoIntentHandler(AbstractRequestHandler):
@@ -214,12 +253,9 @@ class NoIntentHandler(AbstractRequestHandler):
         return is_intent_name("AMAZON.NoIntent")(handler_input)
 
     def handle(self, handler_input: HandlerInput) -> Response:
-        return (
-            handler_input.response_builder
-            .speak(text_to_ssml("Okay, let me know if there's anything else."))
-            .ask(text_to_ssml("Is there anything else?"))
-            .response
-        )
+        # Goes to the agent so a "no" can answer its last question in context,
+        # e.g. "Did you mean Schlüssel?" -> "No" -> "Could you spell it?".
+        return _handle_query(handler_input, "No.")
 
 
 class StopIntentHandler(AbstractRequestHandler):
@@ -227,10 +263,11 @@ class StopIntentHandler(AbstractRequestHandler):
         return (
             is_intent_name("AMAZON.StopIntent")(handler_input)
             or is_intent_name("AMAZON.CancelIntent")(handler_input)
+            or is_intent_name("AMAZON.NavigateHomeIntent")(handler_input)
         )
 
     def handle(self, handler_input: HandlerInput) -> Response:
-        return handler_input.response_builder.speak(text_to_ssml(_STOP)).response
+        return handler_input.response_builder.speak(text_to_ssml(_STOP)).set_should_end_session(True).response
 
 
 class HelpIntentHandler(AbstractRequestHandler):

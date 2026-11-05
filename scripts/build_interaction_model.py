@@ -43,7 +43,18 @@ BUILTINS = {
     "AMAZON.CancelIntent": [],
     "AMAZON.HelpIntent": [],
     "AMAZON.FallbackIntent": [],
+    "AMAZON.NavigateHomeIntent": [],
 }
+
+# Intents that exist only in the Alexa console (added there by hand or by the console)
+# and must survive regeneration: put their JSON objects in this list file.
+EXTRA_INTENTS_FILE = OUT.parent / "console_extra_intents.json"
+
+
+def _extra_intents() -> list:
+    if not EXTRA_INTENTS_FILE.exists():
+        return []
+    return json.loads(EXTRA_INTENTS_FILE.read_text(encoding="utf-8"))
 
 
 def build() -> dict:
@@ -58,6 +69,11 @@ def build() -> dict:
         intents.append({"name": name, "slots": [], "samples": utterances})
     for name, utterances in BUILTINS.items():
         intents.append({"name": name, "samples": utterances})
+    known = {i["name"] for i in intents}
+    for extra in _extra_intents():
+        if extra["name"] in known:
+            raise SystemExit(f"{EXTRA_INTENTS_FILE.name}: {extra['name']} is already generated; remove it there")
+        intents.append(extra)
     return {
         "interactionModel": {
             "languageModel": {

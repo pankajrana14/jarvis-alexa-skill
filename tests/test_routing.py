@@ -161,3 +161,66 @@ def test_statement_reply_rules_forbid_implying_it_was_saved():
     prompt = agent_module._SYSTEM_PROMPT
     assert "remember that" in prompt.lower()
     assert "don't say you'll remember" in prompt.lower()
+
+
+# --- "yes ..." continuations: the opening word and every following word reach the agent ------
+
+@pytest.mark.parametrize("intent, value, expected", [
+    ("YesFollowUpIntent", "explain Schadenfreude with an example", "yes explain Schadenfreude with an example"),
+    ("YesFollowUpIntent", "what is the capital of Peru", "yes what is the capital of Peru"),
+    ("YeahFollowUpIntent", "and what about tomorrow", "yeah and what about tomorrow"),
+    ("YepFollowUpIntent", "the second one please", "yep the second one please"),
+    ("OkayFollowUpIntent", "tell me more about Berlin", "okay tell me more about Berlin"),
+])
+def test_yes_prefixed_speech_keeps_every_word(agent, intent, value, expected):
+    out = lambda_function.lambda_handler(_event(intent, {"followup": value}), None)
+    assert agent.call_args[0][0] == expected
+    assert _keeps_session_open(out)
+
+
+def test_yes_with_german_word_keeps_every_word_without_any_word_list(agent):
+    lambda_function.lambda_handler(_event("YesFollowUpIntent", {"followup": "I meant Mehrwegflasche"}), None)
+    assert agent.call_args[0][0] == "yes I meant Mehrwegflasche"
+
+
+def test_yes_with_a_personal_statement_is_context_not_saved(agent):
+    with patch("intent_handlers.update_wiki") as save:
+        lambda_function.lambda_handler(_event("YesFollowUpIntent", {"followup": "I prefer tea"}), None)
+    assert agent.call_args[0][0] == "yes I prefer tea"
+    save.assert_not_called()
+
+
+def test_standalone_yes_still_uses_the_builtin_contextual_handler(agent):
+    lambda_function.lambda_handler(_event("AMAZON.YesIntent"), None)
+    assert agent.call_args[0][0] == "Yes."   # plain, so it can't read as consent to an older offer
+
+
+# --- general German recovery plumbing ---------------------------------------------------------
+
+def test_spelled_word_reaches_the_agent_letter_by_letter(agent):
+    lambda_function.lambda_handler(_event("ItsSpelledStatementIntent", {"statement": "m e h r w e g"}), None)
+    assert agent.call_args[0][0] == "it's spelled m e h r w e g"
+
+
+def test_no_goes_to_the_agent_so_it_can_follow_up_in_context(agent):
+    out = lambda_function.lambda_handler(_event("AMAZON.NoIntent"), None)
+    assert agent.call_args[0][0] == "No."
+    assert _keeps_session_open(out)
+
+
+def test_garbled_text_is_passed_through_unchanged_with_no_word_list_notes(agent):
+    lambda_function.lambda_handler(_event("IsQuestionIntent", {"question": "there a malmer flasher on it if there is any font available"}), None)
+    assert agent.call_args[0][0] == "is there a malmer flasher on it if there is any font available"
+
+
+def test_navigate_home_ends_the_session(agent):
+    out = lambda_function.lambda_handler(_event("AMAZON.NavigateHomeIntent"), None)
+    assert out["response"].get("shouldEndSession") is True
+
+
+def test_requests_are_logged_with_raw_slot_text(agent, caplog):
+    import logging
+    with caplog.at_level(logging.INFO):
+        lambda_function.lambda_handler(_event("WhatQuestionIntent", {"question": "is a mare vague flasher"}), None)
+    line = next(r.getMessage() for r in caplog.records if r.getMessage().startswith("request "))
+    assert "WhatQuestionIntent" in line and "mare vague flasher" in line

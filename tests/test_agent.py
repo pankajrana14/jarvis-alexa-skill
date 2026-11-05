@@ -135,11 +135,16 @@ def test_run_agent_strips_litellm_style_provider_prefix(monkeypatch):
     assert client.calls[-1]["model"] == "claude-haiku-5-5"
 
 
-def test_run_agent_disables_thinking_for_haiku_5_5(monkeypatch):
+def test_run_agent_uses_low_effort_thinking_for_haiku_5_5(monkeypatch):
+    # With thinking disabled, Haiku wrote its reasoning into the spoken reply and hit
+    # max_tokens on garbled (misheard German) questions; low-effort thinking keeps it out.
     monkeypatch.setenv("LLM_MODEL", "claude-haiku-5-5")
     client = _mock_client(_text_response("Hi"))
     _run(client)
-    assert client.calls[-1]["thinking"] == {"type": "disabled"}
+    body = client.calls[-1]
+    assert body["output_config"] == {"effort": "low"}
+    assert "thinking" not in body          # adaptive thinking is Haiku 5.5's default
+    assert body["max_tokens"] >= 1024      # room for thinking plus a short spoken answer
 
 
 def test_run_agent_uses_between_tools_thinking_for_sonnet_5_5(monkeypatch):
@@ -189,3 +194,29 @@ def test_post_messages_raises_on_client_error(monkeypatch):
     with patch("agent.requests.post", return_value=bad):
         with pytest.raises(RuntimeError, match="401"):
             agent._post_messages({"model": "m"})
+
+
+@pytest.mark.parametrize("query", ["Yes.", "yes", "I prefer green tea", "okay sounds good"])
+def test_update_wiki_is_blocked_unless_the_current_message_explicitly_asks_to_save(query):
+    client = _mock_client(
+        _tool_response("update_wiki", "w1", {"topic": "user profile", "content": "- prefers green tea"}),
+        _text_response("Okay."),
+    )
+    with patch("agent.update_wiki") as save:
+        _run(client, query)
+    save.assert_not_called()
+    result = client.calls[1]["messages"][-1]["content"][0]["content"]
+    assert result.startswith("NOT SAVED") and "remember that" in result
+
+
+@pytest.mark.parametrize("query", ["I want you to remember that my name is Pankaj",
+                                   "please save that I prefer green tea", "note that I live in Berlin",
+                                   "don't forget that my sister is called Mia"])
+def test_update_wiki_runs_when_the_user_explicitly_asks(query):
+    client = _mock_client(
+        _tool_response("update_wiki", "w1", {"topic": "user profile", "content": "- fact"}),
+        _text_response("Saved."),
+    )
+    with patch("agent.update_wiki", return_value="Updated wiki page for 'user profile'.") as save:
+        _run(client, query)
+    save.assert_called_once()

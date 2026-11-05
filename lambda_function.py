@@ -15,6 +15,7 @@ from intent_handlers import (
     LaunchRequestHandler,
     UtteranceIntentHandler,
     RememberIntentHandler,
+    RequestLoggingInterceptor,
     PriceQueryIntentHandler,
     MoreDetailsIntentHandler,
     GreetingIntentHandler,
@@ -33,6 +34,7 @@ from intent_handlers import (
 sb = CustomSkillBuilder(api_client=DefaultApiClient())
 
 sb.add_request_handler(LaunchRequestHandler())
+sb.add_global_request_interceptor(RequestLoggingInterceptor())
 sb.add_request_handler(RememberIntentHandler())
 sb.add_request_handler(UtteranceIntentHandler())
 sb.add_request_handler(PriceQueryIntentHandler())

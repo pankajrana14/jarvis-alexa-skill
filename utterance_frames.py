@@ -68,11 +68,15 @@ _add(
 
 # --- Statements: facts, preferences and context (NOT saved unless explicitly asked) --
 for lead in ("I", "I'm", "I am", "I've", "I have", "I'd", "I would", "my", "we", "our",
-             "it's", "that's"):
+             "it's", "that's",
+             # spelling a word that speech recognition can't catch: "it's spelled m e h r w e g"
+             "it's spelled", "it is spelled", "spelled"):
     _add(Frame(f"{_camel(lead)}StatementIntent", "statement", lead, "statement"))
 
 # --- Follow-ups and corrections ------------------------------------------------------
-for lead in ("and", "also", "but", "so", "or", "then"):
+# "yes/yeah/yep/okay ..." usually answers Jarvis's last question and then continues; a bare
+# "yes" has no slot and stays with the built-in AMAZON.YesIntent.
+for lead in ("and", "also", "but", "so", "or", "then", "yes", "yeah", "yep", "okay"):
     _add(Frame(f"{_camel(lead)}FollowUpIntent", "followup", lead, "followup"))
 for lead in ("actually", "no", "not", "wait", "sorry"):
     _add(Frame(f"{_camel(lead)}CorrectionIntent", "correction", lead, "correction"))
